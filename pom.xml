@@ -93,7 +93,7 @@
           <doCheck>false</doCheck>
           <doUpdate>false</doUpdate>
           <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
-          <buildNumberPropertiesFileLocation>${project.basedir}/buildNumber.properties</buildNumberPropertiesFileLocation>
+          <buildNumberPropertiesFileLocation>${project.basedir}/config/buildNumber.properties</buildNumberPropertiesFileLocation>
         </configuration>
       </plugin>
     </plugins>

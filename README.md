@@ -71,26 +71,45 @@ mvn clean package
 
 **Compilação com visualização do incremento de versão:**
 
+**Linux/macOS:**
 ```bash
-chmod +x build-with-version.sh
-./build-with-version.sh
+chmod +x scripts/build-with-version.sh
+./scripts/build-with-version.sh
+```
+
+**Windows:**
+```cmd
+scripts\build-with-version.bat
 ```
 
 A versão do pacote segue o formato `1.0.0-X`, onde X é o número de build que é incrementado automaticamente.
 
 ### Execução
 
+Você pode executar a aplicação de várias maneiras:
+
+**Usando os scripts de execução:**
+
+**Linux/macOS:**
+```bash
+chmod +x scripts/run.sh
+./scripts/run.sh            # Porta padrão (8080)
+./scripts/run.sh -p 9090    # Porta personalizada
+```
+
+**Windows:**
+```cmd
+scripts\run.bat            # Porta padrão (8080)
+scripts\run.bat -p 9090    # Porta personalizada
+```
+
+**Ou diretamente com java:**
+
 ```bash
 java -jar target/xpathprediction-1.0.0-[número-build].jar
 ```
 
-Substitua `[número-build]` pelo número da versão atual, ou simplesmente use:
-
-```bash
-java -jar $(ls target/xpathprediction-*.jar | grep -v '.original')
-```
-
-Após a execução, o serviço estará disponível em `http://localhost:8080`.
+Após a execução, o serviço estará disponível em `http://localhost:8080` (ou na porta especificada).
 
 ## Uso da API
 
@@ -149,26 +168,29 @@ http://localhost:8080/swagger-ui.html
 
 ## Estrutura do Projeto
 
-O projeto segue uma estrutura padrão de microsserviços Spring Boot:
+O projeto segue uma estrutura organizada:
 
 ```
-├── src/
+├── src/                                     # Código-fonte
 │   ├── main/
-│   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── example/
-│   │   │           └── xpathprediction/
-│   │   │               ├── controller/      # Controladores REST
-│   │   │               ├── domain/          # Objetos de domínio
-│   │   │               ├── exception/       # Exceções e handlers
-│   │   │               ├── integration/     # Integração com serviços externos
-│   │   │               ├── service/         # Lógica de negócio
-│   │   │               └── config/          # Configurações Spring
+│   │   ├── java/com/example/xpathprediction/
+│   │   │   ├── controller/                  # Controladores REST
+│   │   │   ├── domain/                      # Objetos de domínio
+│   │   │   ├── exception/                   # Exceções e handlers
+│   │   │   ├── integration/                 # Integração com serviços externos
+│   │   │   ├── service/                     # Lógica de negócio
+│   │   │   └── config/                      # Configurações Spring
 │   │   └── resources/
 │   │       └── application.properties       # Configurações do aplicativo
 │   └── test/                                # Testes
+├── config/                                  # Arquivos de configuração
+│   └── buildNumber.properties               # Controle de versão
+├── scripts/                                 # Scripts utilitários
+│   ├── build-with-version.sh                # Script de build para Linux/macOS
+│   ├── build-with-version.bat               # Script de build para Windows
+│   ├── run.sh                               # Script de execução para Linux/macOS
+│   └── run.bat                              # Script de execução para Windows
 ├── pom.xml                                  # Configuração Maven
-├── buildNumber.properties                   # Controle de versão
 └── README.md                                # Esta documentação
 ```
 
@@ -211,6 +233,12 @@ Se desejar adicionar novos recursos:
 
 Para executar em modo de depuração:
 
+**Linux/macOS:**
 ```bash
-java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 -jar target/xpathprediction-1.0.0-[número-build].jar
+java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 -jar $(ls -t target/xpathprediction-*.jar | head -1)
+```
+
+**Windows:**
+```cmd
+for /f "delims=" %i in ('dir /b /o-d target\xpathprediction-*.jar ^| findstr /v ".original"') do java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 -jar target\%i
 ``` 
