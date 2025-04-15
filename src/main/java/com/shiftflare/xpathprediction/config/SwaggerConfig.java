@@ -18,7 +18,7 @@ public class SwaggerConfig {
         return new OpenAPI()
                 .info(new Info().title("Xpath Prediction API")
                 .description("API para predição de novos XPaths com integração ao OpenRouter.")
-                .version("v1.0.0") // Convenção comum usar 'v' no início
+                .version("v1.0") // Versão simplificada
                 .license(new License().name("Apache 2.0").url("http://springdoc.org"))) // Exemplo de licença
                 .externalDocs(new ExternalDocumentation()
                 .description("Documentação Completa (Exemplo)")

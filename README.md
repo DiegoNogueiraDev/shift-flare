@@ -66,52 +66,24 @@ No arquivo `application.properties`, você pode ajustar:
 
 ### Compilação
 
-O projeto usa o Maven para gerenciamento de dependências e construção. O número da versão é incrementado automaticamente a cada build.
-
-**Compilação standard:**
+O projeto usa o Maven para gerenciamento de dependências e construção.
 
 ```bash
 mvn clean package
 ```
 
-**Compilação com visualização do incremento de versão:**
-
-**Linux/macOS:**
-```bash
-chmod +x scripts/build-with-version.sh
-./scripts/build-with-version.sh
-```
-
-**Windows:**
-```cmd
-scripts\build-with-version.bat
-```
-
-A versão do pacote segue o formato `1.0.0-X`, onde X é o número de build que é incrementado automaticamente.
-
 ### Execução
 
-Você pode executar a aplicação de várias maneiras:
-
-**Usando os scripts de execução:**
-
-**Linux/macOS:**
-```bash
-chmod +x scripts/run.sh
-./scripts/run.sh            # Porta padrão (8080)
-./scripts/run.sh -p 9090    # Porta personalizada
-```
-
-**Windows:**
-```cmd
-scripts\run.bat            # Porta padrão (8080)
-scripts\run.bat -p 9090    # Porta personalizada
-```
-
-**Ou diretamente com java:**
+Você pode executar a aplicação diretamente com o comando java:
 
 ```bash
-java -jar target/shift-flare-1.0.0-[número-build].jar
+java -jar target/shift-flare-[VERSÃO].jar
+```
+
+Ou usando o Maven:
+
+```bash
+mvn spring-boot:run
 ```
 
 Após a execução, o serviço estará disponível em `http://localhost:8080` (ou na porta especificada).
@@ -305,8 +277,6 @@ O projeto segue uma estrutura organizada:
 │   │       └── application.properties       # Configurações do aplicativo
 │   └── test/                                # Testes
 ├── config/                                  # Arquivos de configuração
-│   └── buildNumber.properties               # Controle de versão
-├── scripts/                                 # Scripts utilitários
 ├── pom.xml                                  # Configuração Maven
 └── README.md                                # Esta documentação
 ```
@@ -346,21 +316,6 @@ Para executar os testes automatizados:
 
 ```bash
 mvn test
-```
-
-### Testando a API
-
-Além dos endpoints de teste disponíveis, você pode testar a API diretamente usando os scripts fornecidos:
-
-**Linux/macOS:**
-```bash
-chmod +x scripts/test-api.sh
-./scripts/test-api.sh
-```
-
-**Windows:**
-```cmd
-scripts\test-api.bat
 ```
 
 ### Modo de teste offline (sem OpenRouter)
