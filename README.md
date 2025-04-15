@@ -219,6 +219,40 @@ Para executar os testes automatizados:
 mvn test
 ```
 
+### Testando a API
+
+Você pode testar a API diretamente usando os scripts fornecidos:
+
+**Linux/macOS:**
+```bash
+chmod +x scripts/test-api.sh
+./scripts/test-api.sh
+```
+
+**Windows:**
+```cmd
+scripts\test-api.bat
+```
+
+### Modo de teste offline (sem OpenRouter)
+
+Se você quiser testar a aplicação sem uma chave API da OpenRouter, pode usar os scripts de mock:
+
+**Linux/macOS:**
+```bash
+# Requer 'socat' instalado
+chmod +x scripts/mock-openrouter.sh
+./scripts/mock-openrouter.sh
+```
+
+**Windows:**
+```cmd
+# Requer 'ncat' instalado (parte do Nmap)
+scripts\mock-openrouter.bat
+```
+
+Isso criará um servidor mock local que simula as respostas da OpenRouter, permitindo que você teste a aplicação sem uma chave API real.
+
 ### Adicionando novos recursos
 
 Se desejar adicionar novos recursos:

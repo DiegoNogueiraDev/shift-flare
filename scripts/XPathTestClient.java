@@ -3,6 +3,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Cliente Java de exemplo para testar a API de Predição de XPath.
@@ -18,6 +20,30 @@ public class XPathTestClient {
 
     public static void main(String[] args) {
         try {
+            // Verificar se o servidor está rodando
+            try {
+                HttpResponse<String> healthResponse = client.send(
+                    HttpRequest.newBuilder()
+                        .uri(URI.create("http://localhost:8080/actuator/health"))
+                        .GET()
+                        .build(),
+                    HttpResponse.BodyHandlers.ofString()
+                );
+                
+                if (healthResponse.statusCode() != 200) {
+                    System.err.println("ERRO: O servidor não está rodando corretamente em http://localhost:8080");
+                    System.err.println("Inicie o servidor antes de executar este cliente.");
+                    System.exit(1);
+                }
+                
+                System.out.println("Servidor está rodando! Status: " + healthResponse.statusCode());
+            } catch (Exception e) {
+                System.err.println("ERRO: Não foi possível conectar ao servidor em http://localhost:8080");
+                System.err.println("Mensagem: " + e.getMessage());
+                System.err.println("Inicie o servidor antes de executar este cliente.");
+                System.exit(1);
+            }
+            
             // Exemplo 1: XPath simples
             testXPathPrediction(
                 "//div[@id=\"produto-antigo\"]",
@@ -56,12 +82,15 @@ public class XPathTestClient {
         System.out.println("XPath com erro: " + errorXpath);
         System.out.println("DOM resumido: " + pageDOM.substring(0, Math.min(pageDOM.length(), 50)) + "...");
         
-        // Construir o payload JSON
-        String jsonPayload = String.format(
-            "{\"errorXpath\": \"%s\", \"pageDOM\": \"%s\"}",
-            errorXpath.replace("\"", "\\\""),
-            pageDOM.replace("\"", "\\\"")
-        );
+        // Construir o payload JSON usando HashMap para evitar problemas de escape
+        Map<String, String> payload = new HashMap<>();
+        payload.put("errorXpath", errorXpath);
+        payload.put("pageDOM", pageDOM);
+        
+        // Converter HashMap para JSON usando método simples
+        String jsonPayload = toJson(payload);
+        
+        System.out.println("\nPayload JSON: " + jsonPayload);
         
         // Construir a requisição HTTP
         HttpRequest request = HttpRequest.newBuilder()
@@ -88,5 +117,74 @@ public class XPathTestClient {
             System.out.println("ERRO NA PREDIÇÃO. Verifique a resposta acima.");
             System.out.println("========== TESTE CONCLUÍDO COM FALHA ==========");
         }
+    }
+    
+    /**
+     * Método simples para converter um Map para JSON
+     */
+    private static String toJson(Map<String, String> map) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        boolean first = true;
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            if (!first) {
+                sb.append(",");
+            }
+            first = false;
+            sb.append("\"").append(entry.getKey()).append("\":");
+            sb.append("\"").append(escapeJson(entry.getValue())).append("\"");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+    
+    /**
+     * Método para escapar caracteres especiais em uma string JSON
+     */
+    private static String escapeJson(String input) {
+        if (input == null) {
+            return "";
+        }
+        
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+            switch (ch) {
+                case '\"':
+                    result.append("\\\"");
+                    break;
+                case '\\':
+                    result.append("\\\\");
+                    break;
+                case '\b':
+                    result.append("\\b");
+                    break;
+                case '\f':
+                    result.append("\\f");
+                    break;
+                case '\n':
+                    result.append("\\n");
+                    break;
+                case '\r':
+                    result.append("\\r");
+                    break;
+                case '\t':
+                    result.append("\\t");
+                    break;
+                default:
+                    // Tratar caracteres Unicode que precisam ser escapados
+                    if (ch < ' ' || (ch >= '\u0080' && ch < '\u00a0') || (ch >= '\u2000' && ch < '\u2100')) {
+                        String hex = Integer.toHexString(ch);
+                        result.append("\\u");
+                        for (int j = 0; j < 4 - hex.length(); j++) {
+                            result.append('0');
+                        }
+                        result.append(hex);
+                    } else {
+                        result.append(ch);
+                    }
+            }
+        }
+        return result.toString();
     }
 } 

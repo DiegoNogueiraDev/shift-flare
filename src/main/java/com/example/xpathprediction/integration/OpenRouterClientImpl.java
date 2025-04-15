@@ -35,6 +35,9 @@ public class OpenRouterClientImpl implements OpenRouterClient {
     
     @Value("${openrouter.model}")
     private String model;
+    
+    @Value("${openrouter.use-fallback:true}")
+    private boolean useFallback;
 
     public OpenRouterClientImpl(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -68,30 +71,132 @@ public class OpenRouterClientImpl implements OpenRouterClient {
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
 
             logger.info("Enviando dados para o OpenRouter: {}", openRouterUrl);
-            ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
-                    openRouterUrl, requestEntity, Map.class);
-
-            if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
-                String suggestedXpath = extractXPathFromResponse(responseEntity.getBody());
-                logger.info("XPath sugerido recebido: {}", suggestedXpath);
-                if (suggestedXpath == null || suggestedXpath.isBlank()) {
-                    logger.warn("OpenRouter retornou um XPath vazio ou nulo.");
-                    throw new XpathPredictionException("OpenRouter retornou uma sugestão inválida.");
+            
+            try {
+                ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
+                        openRouterUrl, requestEntity, Map.class);
+    
+                if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
+                    String suggestedXpath = extractXPathFromResponse(responseEntity.getBody());
+                    logger.info("XPath sugerido recebido: {}", suggestedXpath);
+                    if (suggestedXpath == null || suggestedXpath.isBlank()) {
+                        logger.warn("OpenRouter retornou um XPath vazio ou nulo.");
+                        if (useFallback) {
+                            return fallbackPrediction(errorXpath, pageDOM);
+                        }
+                        throw new XpathPredictionException("OpenRouter retornou uma sugestão inválida.");
+                    }
+                    return suggestedXpath;
+                } else {
+                    logger.error("Erro na resposta do OpenRouter. Status: {}, Body: {}", 
+                                 responseEntity.getStatusCode(), responseEntity.getBody());
+                    if (useFallback) {
+                        return fallbackPrediction(errorXpath, pageDOM);
+                    }
+                    throw new XpathPredictionException("Erro na resposta do OpenRouter: Status " + responseEntity.getStatusCode());
                 }
-                return suggestedXpath;
-            } else {
-                logger.error("Erro na resposta do OpenRouter. Status: {}, Body: {}", 
-                               responseEntity.getStatusCode(), responseEntity.getBody());
-                throw new XpathPredictionException("Erro na resposta do OpenRouter: Status " + responseEntity.getStatusCode());
+            } catch (RestClientException ex) {
+                logger.error("Erro de comunicação ao chamar o OpenRouter em {}", openRouterUrl, ex);
+                if (useFallback) {
+                    return fallbackPrediction(errorXpath, pageDOM);
+                }
+                throw new XpathPredictionException("Erro de comunicação ao chamar o OpenRouter", ex);
             }
-        } catch (RestClientException ex) {
-            logger.error("Erro de comunicação ao chamar o OpenRouter em {}", openRouterUrl, ex);
-            throw new XpathPredictionException("Erro de comunicação ao chamar o OpenRouter", ex);
         } catch (Exception ex) {
             // Captura outras exceções inesperadas
             logger.error("Erro inesperado ao chamar o OpenRouter", ex);
+            if (useFallback) {
+                return fallbackPrediction(errorXpath, pageDOM);
+            }
             throw new XpathPredictionException("Erro inesperado ao chamar o OpenRouter", ex);
         }
+    }
+    
+    /**
+     * Implementação de fallback para sugerir XPaths quando a API externa falha
+     */
+    private String fallbackPrediction(String errorXpath, String pageDOM) {
+        logger.info("Usando lógica de fallback para predição de XPath");
+        // Implementação simples para analisar o HTML e sugerir um XPath
+        try {
+            // Se o XPath contém @id, procurar um novo id no DOM
+            if (errorXpath.contains("@id")) {
+                // Extrair o padrão do XPath original (div, span, etc.)
+                String tag = extractTagFromXPath(errorXpath);
+                
+                // Procurar por IDs no DOM
+                List<String> ids = extractIdsFromDOM(pageDOM);
+                if (!ids.isEmpty()) {
+                    // Retornar um novo XPath com o ID encontrado
+                    return "//" + tag + "[@id=\"" + ids.get(0) + "\"]";
+                }
+            }
+            
+            // Se o XPath contém @class, procurar uma nova classe no DOM
+            if (errorXpath.contains("@class")) {
+                // Extrair o padrão do XPath original (div, span, etc.)
+                String tag = extractTagFromXPath(errorXpath);
+                
+                // Procurar por classes no DOM
+                List<String> classes = extractClassesFromDOM(pageDOM);
+                if (!classes.isEmpty()) {
+                    // Retornar um novo XPath com a classe encontrada
+                    return "//" + tag + "[@class=\"" + classes.get(0) + "\"]";
+                }
+            }
+            
+            // Fallback genérico
+            return "//div[1]";
+        } catch (Exception e) {
+            logger.error("Erro ao gerar fallback para XPath", e);
+            return "//div";
+        }
+    }
+    
+    private String extractTagFromXPath(String xpath) {
+        // Extrai o nome da tag de um XPath (ex: //div[@id='foo'] -> div)
+        if (xpath.contains("//")) {
+            String[] parts = xpath.split("//");
+            if (parts.length > 1) {
+                String tagPart = parts[1];
+                if (tagPart.contains("[")) {
+                    return tagPart.substring(0, tagPart.indexOf("["));
+                } else if (tagPart.contains("/")) {
+                    return tagPart.substring(0, tagPart.indexOf("/"));
+                } else {
+                    return tagPart;
+                }
+            }
+        }
+        return "div"; // tag padrão
+    }
+    
+    private List<String> extractIdsFromDOM(String dom) {
+        List<String> ids = new ArrayList<>();
+        int index = dom.indexOf("id=\"");
+        while (index != -1) {
+            int endIndex = dom.indexOf("\"", index + 4);
+            if (endIndex != -1) {
+                String id = dom.substring(index + 4, endIndex);
+                ids.add(id);
+            }
+            index = dom.indexOf("id=\"", endIndex);
+        }
+        return ids;
+    }
+    
+    private List<String> extractClassesFromDOM(String dom) {
+        List<String> classes = new ArrayList<>();
+        int index = dom.indexOf("class=\"");
+        while (index != -1) {
+            int endIndex = dom.indexOf("\"", index + 7);
+            if (endIndex != -1) {
+                String className = dom.substring(index + 7, endIndex);
+                classes.add(className);
+            }
+            index = dom.indexOf("class=\"", endIndex);
+        }
+        return classes;
     }
     
     /**
