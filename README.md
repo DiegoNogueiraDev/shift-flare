@@ -8,6 +8,10 @@ Este microserviço oferece uma API REST para sugerir novos XPaths quando os XPat
 - [Configuração](#configuração)
 - [Compilação e Execução](#compilação-e-execução)
 - [Uso da API](#uso-da-api)
+  - [Endpoint para predição de XPath](#endpoint-para-predição-de-xpath)
+  - [Endpoints de Teste](#endpoints-de-teste)
+  - [Endpoints de Configuração](#endpoints-de-configuração)
+  - [Documentação da API com Swagger](#documentação-da-api-com-swagger)
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Como Funciona](#como-funciona)
 - [Desenvolvimento e Contribuição](#desenvolvimento-e-contribuição)
@@ -24,8 +28,8 @@ Este microserviço oferece uma API REST para sugerir novos XPaths quando os XPat
 ### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/seu-usuario/xpathprediction.git
-cd xpathprediction
+git clone https://github.com/seu-usuario/shift-flare.git
+cd shift-flare
 ```
 
 ### 2. Configure as variáveis de ambiente
@@ -55,7 +59,8 @@ openrouter.site-name=Nome do Seu Site
 No arquivo `application.properties`, você pode ajustar:
 
 - `server.port`: Porta do servidor (padrão: 8080)
-- `openrouter.model`: Modelo usado para predições (padrão: openai/gpt-4o)
+- `openrouter.model`: Modelo usado para predições (padrão: google/gemini-2.5-pro-exp-03-25:free)
+- `openrouter.use-fallback`: Habilitar/desabilitar o mecanismo de fallback quando a API falha (true/false)
 
 ## Compilação e Execução
 
@@ -106,14 +111,14 @@ scripts\run.bat -p 9090    # Porta personalizada
 **Ou diretamente com java:**
 
 ```bash
-java -jar target/xpathprediction-1.0.0-[número-build].jar
+java -jar target/shift-flare-1.0.0-[número-build].jar
 ```
 
 Após a execução, o serviço estará disponível em `http://localhost:8080` (ou na porta especificada).
 
 ## Uso da API
 
-O serviço expõe um endpoint REST para predição de XPath.
+O serviço expõe endpoints REST para predição de XPath, testes e configuração.
 
 ### Endpoint para predição de XPath
 
@@ -158,6 +163,109 @@ curl -X POST http://localhost:8080/api/v1/xpath/predict \
 - `400 Bad Request`: Dados de entrada inválidos.
 - `500 Internal Server Error`: Erro ao processar a predição.
 
+### Endpoints de Teste
+
+O serviço inclui endpoints para testar os cenários de predição de XPath e a conexão com o OpenRouter.
+
+#### 1. Executar todos os cenários de teste
+
+**URL**: `/api/test/run-all`  
+**Método**: GET
+
+Este endpoint executa todos os 5 cenários de teste predefinidos e retorna os resultados básicos, incluindo o XPath sugerido para cada caso.
+
+**Exemplo de requisição**:
+
+```bash
+curl -X GET http://localhost:8080/api/test/run-all
+```
+
+#### 2. Executar todos os cenários com detalhes
+
+**URL**: `/api/test/run-all/detailed`  
+**Método**: GET
+
+Executa todos os cenários e retorna resultados detalhados, incluindo payloads de requisição e resposta, estatísticas de sucesso e informações completas sobre cada cenário.
+
+**Exemplo de requisição**:
+
+```bash
+curl -X GET http://localhost:8080/api/test/run-all/detailed
+```
+
+#### 3. Executar cenário específico
+
+**URL**: `/api/test/run/{id}`  
+**Método**: GET  
+**Parâmetros de URL**: `id` - ID do cenário (1-5)
+
+Executa um cenário específico e retorna os resultados detalhados apenas desse cenário.
+
+**Exemplo de requisição**:
+
+```bash
+curl -X GET http://localhost:8080/api/test/run/1
+```
+
+**Cenários disponíveis**:
+1. XPath com ID inexistente
+2. XPath com classe alterada
+3. XPath com estrutura hierárquica modificada
+4. XPath com texto alterado
+5. XPath em DOM complexo
+
+#### 4. Testar conexão com OpenRouter
+
+**URL**: `/api/test/test-openrouter-connection`  
+**Método**: GET
+
+Testa diretamente a conexão com a API do OpenRouter, enviando uma requisição simples e retornando detalhes completos da comunicação, incluindo status, erros e sugestões de solução.
+
+**Exemplo de requisição**:
+
+```bash
+curl -X GET http://localhost:8080/api/test/test-openrouter-connection
+```
+
+### Endpoints de Configuração
+
+O serviço permite atualizar a chave da API do OpenRouter em tempo de execução.
+
+#### 1. Atualizar chave da API
+
+**URL**: `/api/config/update-api-key`  
+**Método**: POST  
+**Content-Type**: application/json
+
+**Corpo da requisição**:
+
+```json
+{
+  "apiKey": "sk-or-v1-sua-nova-chave-api"
+}
+```
+
+**Exemplo de requisição**:
+
+```bash
+curl -X POST http://localhost:8080/api/config/update-api-key \
+  -H "Content-Type: application/json" \
+  -d '{"apiKey": "sk-or-v1-sua-nova-chave-api"}'
+```
+
+#### 2. Verificar status da chave da API
+
+**URL**: `/api/config/check-api-key`  
+**Método**: POST
+
+Verifica se a chave da API está configurada, retornando seu status e uma versão mascarada da chave.
+
+**Exemplo de requisição**:
+
+```bash
+curl -X POST http://localhost:8080/api/config/check-api-key
+```
+
 ### Documentação da API com Swagger
 
 A documentação completa da API está disponível através do Swagger UI em:
@@ -166,6 +274,8 @@ A documentação completa da API está disponível através do Swagger UI em:
 http://localhost:8080/swagger-ui.html
 ```
 
+A interface do Swagger permite explorar todos os endpoints, parâmetros e modelos de dados, além de testar as chamadas diretamente pela interface.
+
 ## Estrutura do Projeto
 
 O projeto segue uma estrutura organizada:
@@ -173,23 +283,30 @@ O projeto segue uma estrutura organizada:
 ```
 ├── src/                                     # Código-fonte
 │   ├── main/
-│   │   ├── java/com/example/xpathprediction/
+│   │   ├── java/com/shiftflare/xpathprediction/
 │   │   │   ├── controller/                  # Controladores REST
+│   │   │   │   ├── ApiKeyController.java    # Gerenciamento da chave API
+│   │   │   │   ├── OpenRouterTestController.java # Testes do OpenRouter
+│   │   │   │   └── XpathPredictionController.java # Predição de XPath
 │   │   │   ├── domain/                      # Objetos de domínio
 │   │   │   ├── exception/                   # Exceções e handlers
 │   │   │   ├── integration/                 # Integração com serviços externos
+│   │   │   │   ├── OpenRouterClient.java    # Interface do cliente OpenRouter
+│   │   │   │   └── OpenRouterClientImpl.java # Implementação do cliente
 │   │   │   ├── service/                     # Lógica de negócio
+│   │   │   │   ├── OpenRouterTestService.java # Serviço de testes
+│   │   │   │   └── XpathPredictionService.java # Serviço de predição
 │   │   │   └── config/                      # Configurações Spring
+│   │   │       ├── OpenRouterConfig.java    # Validação de configurações
+│   │   │       ├── OpenRouterClientTestConfig.java # Teste de conexão
+│   │   │       ├── RestTemplateConfig.java  # Configuração HTTP
+│   │   │       └── SwaggerConfig.java       # Configuração da documentação
 │   │   └── resources/
 │   │       └── application.properties       # Configurações do aplicativo
 │   └── test/                                # Testes
 ├── config/                                  # Arquivos de configuração
 │   └── buildNumber.properties               # Controle de versão
 ├── scripts/                                 # Scripts utilitários
-│   ├── build-with-version.sh                # Script de build para Linux/macOS
-│   ├── build-with-version.bat               # Script de build para Windows
-│   ├── run.sh                               # Script de execução para Linux/macOS
-│   └── run.bat                              # Script de execução para Windows
 ├── pom.xml                                  # Configuração Maven
 └── README.md                                # Esta documentação
 ```
@@ -209,6 +326,18 @@ O fluxo de predição de XPath funciona da seguinte forma:
 
 O serviço utiliza a API de completions da OpenRouter para gerar o novo XPath. O prompt é construído para instruir o modelo de linguagem a analisar o DOM atual e o XPath com erro, retornando um novo XPath válido que possa ser usado como substituto.
 
+Quando a API do OpenRouter falha, o serviço pode utilizar um mecanismo de fallback inteligente (se configurado) para gerar um XPath alternativo baseado na análise do DOM.
+
+## Mecanismo de Fallback
+
+O sistema inclui um mecanismo de fallback robusto que é ativado quando:
+
+1. A comunicação com a API do OpenRouter falha
+2. A API retorna um erro
+3. A resposta não contém um XPath válido
+
+A lógica de fallback analisa o tipo de XPath original (baseado em ID, classe, texto, etc.) e o DOM atual para gerar uma alternativa adequada. O comportamento do fallback pode ser habilitado ou desabilitado através da configuração `openrouter.use-fallback` no arquivo `application.properties`.
+
 ## Desenvolvimento e Contribuição
 
 ### Executando os testes
@@ -221,7 +350,7 @@ mvn test
 
 ### Testando a API
 
-Você pode testar a API diretamente usando os scripts fornecidos:
+Além dos endpoints de teste disponíveis, você pode testar a API diretamente usando os scripts fornecidos:
 
 **Linux/macOS:**
 ```bash
@@ -236,43 +365,11 @@ scripts\test-api.bat
 
 ### Modo de teste offline (sem OpenRouter)
 
-Se você quiser testar a aplicação sem uma chave API da OpenRouter, pode usar os scripts de mock:
+Se você quiser testar a aplicação sem uma chave API da OpenRouter, pode habilitar o modo de fallback e desativar as chamadas externas:
 
-**Linux/macOS:**
-```bash
-# Requer 'socat' instalado
-chmod +x scripts/mock-openrouter.sh
-./scripts/mock-openrouter.sh
+1. No arquivo `application.properties`, configure:
+```properties
+openrouter.use-fallback=true
 ```
 
-**Windows:**
-```cmd
-# Requer 'ncat' instalado (parte do Nmap)
-scripts\mock-openrouter.bat
-```
-
-Isso criará um servidor mock local que simula as respostas da OpenRouter, permitindo que você teste a aplicação sem uma chave API real.
-
-### Adicionando novos recursos
-
-Se desejar adicionar novos recursos:
-
-1. Crie um fork do repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Faça commit das suas alterações (`git commit -m 'Adiciona nova feature'`)
-4. Envie para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
-
-### Depuração
-
-Para executar em modo de depuração:
-
-**Linux/macOS:**
-```bash
-java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 -jar $(ls -t target/xpathprediction-*.jar | head -1)
-```
-
-**Windows:**
-```cmd
-for /f "delims=" %i in ('dir /b /o-d target\xpathprediction-*.jar ^| findstr /v ".original"') do java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 -jar target\%i
-``` 
+2. Execute a aplicação normalmente. Quando as chamadas à API falharem, o mecanismo de fallback gerará XPaths alternativos baseados no DOM. 

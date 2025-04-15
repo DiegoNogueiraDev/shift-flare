@@ -11,11 +11,11 @@
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
   
-  <groupId>com.example</groupId>
-  <artifactId>xpathprediction</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <groupId>com.shiftflare</groupId>
+  <artifactId>shift-flare</artifactId>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
-  <name>XpathPrediction Microservice</name>
+  <name>Shift Flare Microservice</name>
 
   <properties>
     <java.version>11</java.version>
