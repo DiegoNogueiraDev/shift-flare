@@ -1,0 +1,54 @@
+# Arquivos compilados
+target/
+*.class
+
+# Logs
+*.log
+logs/
+
+# Arquivos de configuração específicos do ambiente
+*.properties.local
+application-*.properties
+!application.properties
+!application-test.properties
+
+# Arquivos do Spring Boot
+.springBeans
+
+# Arquivos IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.settings/
+.classpath
+.project
+.vscode/
+.sts4-cache/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db
+
+# Arquivos de build Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+# Arquivos de autenticação
+*.pem
+*.key
+*.p12
+
+# Outros
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+.env 
