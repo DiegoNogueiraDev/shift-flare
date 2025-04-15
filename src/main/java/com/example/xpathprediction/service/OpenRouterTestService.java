@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -110,11 +111,24 @@ public class OpenRouterTestService {
         
         try {
             long inicio = System.currentTimeMillis();
-            String xpathSugerido = openRouterClient.getSuggestedXpath(xpathOriginal, dom);
+            
+            // Usa o novo método que retorna também os payloads
+            Map<String, Object> resultadoCompleto = openRouterClient.getSuggestedXpathWithPayloads(xpathOriginal, dom);
+            
             long fim = System.currentTimeMillis();
+            
+            // Extrai o XPath sugerido do resultado
+            String xpathSugerido = (String) resultadoCompleto.get("suggestedXpath");
+            
+            // Armazena os payloads completos de requisição e resposta
+            resultado.setPayloadEnviado((String) resultadoCompleto.get("requestPayload"));
+            resultado.setPayloadRecebido((String) resultadoCompleto.get("responsePayload"));
             
             resultado.setXpathSugerido(xpathSugerido);
             resultado.setTempoExecucao(fim - inicio);
+            
+            // Verifica se é resultado de fallback
+            Boolean isFallback = (Boolean) resultadoCompleto.getOrDefault("isFallback", false);
             
             // Verifica se o xpath sugerido corresponde ao esperado
             if (xpathEsperado != null) {
@@ -130,10 +144,25 @@ public class OpenRouterTestService {
                 } else {
                     resultado.setObservacao("XPath não corresponde ao esperado: " + xpathEsperado);
                 }
+                
+                // Adiciona observação sobre fallback
+                if (isFallback != null && isFallback) {
+                    resultado.setObservacao(resultado.getObservacao() + " (usando fallback)");
+                }
             } else {
                 // Se não temos um xpath esperado, consideramos sucesso se recebemos qualquer resposta não vazia
                 resultado.setSucesso(xpathSugerido != null && !xpathSugerido.isEmpty());
                 resultado.setObservacao("Avaliação sem XPath esperado definido");
+                
+                // Adiciona observação sobre fallback
+                if (isFallback != null && isFallback) {
+                    resultado.setObservacao(resultado.getObservacao() + " (usando fallback)");
+                }
+            }
+            
+            // Se há erro, adiciona à observação
+            if (resultadoCompleto.containsKey("error")) {
+                resultado.setObservacao(resultado.getObservacao() + " - Erro: " + resultadoCompleto.get("error"));
             }
             
             logger.info("Cenário {} concluído: {}", cenarioNome, resultado.isSucesso() ? "SUCESSO" : "FALHA");

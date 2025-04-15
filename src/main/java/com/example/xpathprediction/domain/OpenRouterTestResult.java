@@ -15,6 +15,8 @@ public class OpenRouterTestResult {
     private long tempoExecucao; // em milissegundos
     private LocalDateTime dataExecucao;
     private String observacao;
+    private String payloadEnviado;
+    private String payloadRecebido;
 
     public OpenRouterTestResult() {
         this.dataExecucao = LocalDateTime.now();
@@ -89,6 +91,22 @@ public class OpenRouterTestResult {
 
     public void setObservacao(String observacao) {
         this.observacao = observacao;
+    }
+
+    public String getPayloadEnviado() {
+        return payloadEnviado;
+    }
+
+    public void setPayloadEnviado(String payloadEnviado) {
+        this.payloadEnviado = payloadEnviado;
+    }
+
+    public String getPayloadRecebido() {
+        return payloadRecebido;
+    }
+
+    public void setPayloadRecebido(String payloadRecebido) {
+        this.payloadRecebido = payloadRecebido;
     }
 
     @Override
