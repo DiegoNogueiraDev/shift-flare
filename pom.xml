@@ -13,13 +13,20 @@
   
   <groupId>com.example</groupId>
   <artifactId>xpathprediction</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.0-${buildNumber}</version>
   <packaging>jar</packaging>
   <name>XpathPrediction Microservice</name>
 
   <properties>
     <java.version>11</java.version>
+    <buildNumber>0</buildNumber>
   </properties>
+
+  <scm>
+    <connection>scm:git:.</connection>
+    <developerConnection>scm:git:.</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 
   <dependencies>
     <!-- Spring Boot Starter -->
@@ -56,11 +63,38 @@
   </dependencies>
 
   <build>
+    <finalName>${project.artifactId}-${project.version}</finalName>
     <plugins>
       <!-- Plugin do Spring Boot para empacotamento -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+      
+      <!-- Plugin para incremento automático da versão -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>buildnumber</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <format>{0,number}</format>
+          <items>
+            <item>buildNumber</item>
+          </items>
+          <doCheck>false</doCheck>
+          <doUpdate>false</doUpdate>
+          <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
+          <buildNumberPropertiesFileLocation>${project.basedir}/buildNumber.properties</buildNumberPropertiesFileLocation>
+        </configuration>
       </plugin>
     </plugins>
   </build>

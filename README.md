@@ -61,14 +61,33 @@ No arquivo `application.properties`, você pode ajustar:
 
 ### Compilação
 
+O projeto usa o Maven para gerenciamento de dependências e construção. O número da versão é incrementado automaticamente a cada build.
+
+**Compilação standard:**
+
 ```bash
 mvn clean package
 ```
 
+**Compilação com visualização do incremento de versão:**
+
+```bash
+chmod +x build-with-version.sh
+./build-with-version.sh
+```
+
+A versão do pacote segue o formato `1.0.0-X`, onde X é o número de build que é incrementado automaticamente.
+
 ### Execução
 
 ```bash
-java -jar target/xpathprediction-1.0.0.jar
+java -jar target/xpathprediction-1.0.0-[número-build].jar
+```
+
+Substitua `[número-build]` pelo número da versão atual, ou simplesmente use:
+
+```bash
+java -jar $(ls target/xpathprediction-*.jar | grep -v '.original')
 ```
 
 Após a execução, o serviço estará disponível em `http://localhost:8080`.
@@ -149,6 +168,7 @@ O projeto segue uma estrutura padrão de microsserviços Spring Boot:
 │   │       └── application.properties       # Configurações do aplicativo
 │   └── test/                                # Testes
 ├── pom.xml                                  # Configuração Maven
+├── buildNumber.properties                   # Controle de versão
 └── README.md                                # Esta documentação
 ```
 
@@ -192,5 +212,5 @@ Se desejar adicionar novos recursos:
 Para executar em modo de depuração:
 
 ```bash
-java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 -jar target/xpathprediction-1.0.0.jar
+java -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 -jar target/xpathprediction-1.0.0-[número-build].jar
 ``` 
