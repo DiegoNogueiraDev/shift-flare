@@ -67,6 +67,7 @@ public class OpenRouterClientImpl implements OpenRouterClient {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + apiKey);
+            headers.set("User-Agent", "XpathPrediction/1.0");
             
             // Adicionar headers opcionais apenas se estiverem presentes
             if (siteUrl != null && !siteUrl.isEmpty()) {
@@ -81,6 +82,8 @@ public class OpenRouterClientImpl implements OpenRouterClient {
 
             logger.info("Enviando dados para o OpenRouter: {}", openRouterUrl);
             logger.debug("Usando modelo: {}", model);
+            logger.debug("Headers de autenticação: Bearer {}", 
+                    apiKey != null ? apiKey.substring(0, Math.min(10, apiKey.length())) + "..." : "null");
             
             try {
                 ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
@@ -336,6 +339,7 @@ public class OpenRouterClientImpl implements OpenRouterClient {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + apiKey);
+            headers.set("User-Agent", "XpathPrediction/1.0");
             
             // Adicionar headers opcionais apenas se estiverem presentes
             if (siteUrl != null && !siteUrl.isEmpty()) {
@@ -350,17 +354,27 @@ public class OpenRouterClientImpl implements OpenRouterClient {
 
             logger.info("Enviando dados para o OpenRouter (com captura de payload): {}", openRouterUrl);
             logger.debug("Usando modelo: {}", model);
+            logger.debug("Headers de autenticação: Bearer {}", 
+                    apiKey != null ? apiKey.substring(0, Math.min(10, apiKey.length())) + "..." : "null");
+            
+            // LOG para depuração
+            logger.debug("REQUEST HEADERS: {}", headers);
+            logger.debug("REQUEST BODY: {}", payload);
             
             try {
+                logger.debug("Iniciando chamada HTTP para OpenRouter...");
                 ResponseEntity<Map> responseEntity = restTemplate.postForEntity(
                         openRouterUrl, requestEntity, Map.class);
+                logger.debug("Resposta recebida. Status: {}", responseEntity.getStatusCode());
 
                 // Armazenar o payload de resposta
                 if (responseEntity.getBody() != null) {
                     String responseStr = objectMapper.writeValueAsString(responseEntity.getBody());
                     result.put("responsePayload", responseStr);
+                    logger.debug("RESPONSE BODY: {}", responseStr);
                 } else {
                     result.put("responsePayload", "Resposta nula");
+                    logger.warn("Resposta com corpo nulo recebida do OpenRouter");
                 }
 
                 if (responseEntity.getStatusCode() == HttpStatus.OK && responseEntity.getBody() != null) {
@@ -393,6 +407,17 @@ public class OpenRouterClientImpl implements OpenRouterClient {
                 }
             } catch (RestClientException ex) {
                 logger.error("Erro de comunicação ao chamar o OpenRouter em {}", openRouterUrl, ex);
+                
+                // Detalhando o erro para melhor diagnóstico
+                if (ex instanceof org.springframework.web.client.HttpClientErrorException) {
+                    org.springframework.web.client.HttpClientErrorException httpEx = 
+                        (org.springframework.web.client.HttpClientErrorException) ex;
+                    logger.error("Status do erro HTTP: {}", httpEx.getStatusCode());
+                    logger.error("Corpo da resposta de erro: {}", httpEx.getResponseBodyAsString());
+                    result.put("errorStatus", httpEx.getStatusCode().toString());
+                    result.put("errorBody", httpEx.getResponseBodyAsString());
+                }
+                
                 result.put("error", "Erro de comunicação: " + ex.getMessage());
                 if (useFallback) {
                     String fallbackXpath = fallbackPrediction(errorXpath, pageDOM);

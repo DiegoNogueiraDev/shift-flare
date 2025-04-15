@@ -4,12 +4,21 @@ import com.example.xpathprediction.domain.OpenRouterTestResult;
 import com.example.xpathprediction.service.OpenRouterTestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +32,11 @@ public class OpenRouterTestController {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenRouterTestController.class);
     private final OpenRouterTestService openRouterTestService;
+    
+    @Autowired
+    private Environment environment;
 
+    @Autowired
     public OpenRouterTestController(OpenRouterTestService openRouterTestService) {
         this.openRouterTestService = openRouterTestService;
     }
@@ -148,5 +161,104 @@ public class OpenRouterTestController {
         
         logger.info("Execução do cenário {} finalizada", id);
         return ResponseEntity.ok(responseMap);
+    }
+
+    /**
+     * Endpoint para testar diretamente a conexão com o OpenRouter.
+     * Usa exatamente o mesmo formato do exemplo da documentação.
+     * 
+     * @return Resultado do teste de conexão
+     */
+    @GetMapping("/test-openrouter-connection")
+    public ResponseEntity<Map<String, Object>> testarConexaoOpenRouter() {
+        logger.info("Iniciando teste direto de conexão com OpenRouter");
+        
+        Map<String, Object> responseData = new HashMap<>();
+        
+        try {
+            // Preparar headers exatamente como no exemplo
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + environment.getProperty("openrouter.api-key"));
+            
+            String siteUrl = environment.getProperty("openrouter.site-url");
+            if (siteUrl != null && !siteUrl.isBlank()) {
+                headers.set("HTTP-Referer", siteUrl);
+            }
+            
+            String siteName = environment.getProperty("openrouter.site-name");
+            if (siteName != null && !siteName.isBlank()) {
+                headers.set("X-Title", siteName);
+            }
+            
+            // Criar payload exatamente como no exemplo
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("model", environment.getProperty("openrouter.model"));
+            
+            List<Map<String, String>> messages = new ArrayList<>();
+            Map<String, String> message = new HashMap<>();
+            message.put("role", "user");
+            message.put("content", "What is the meaning of life?");
+            messages.add(message);
+            
+            payload.put("messages", messages);
+            
+            // Detalhes da requisição para diagnóstico
+            responseData.put("requestUrl", environment.getProperty("openrouter.url"));
+            responseData.put("requestHeaders", headers.toString());
+            responseData.put("requestBody", payload);
+            
+            HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
+            
+            logger.info("Enviando requisição de teste para o OpenRouter...");
+            
+            // Usar RestTemplate diretamente
+            RestTemplate restTemplate = new RestTemplate();
+            
+            try {
+                ResponseEntity<Map> response = restTemplate.postForEntity(
+                        environment.getProperty("openrouter.url"), 
+                        requestEntity, 
+                        Map.class);
+                
+                logger.info("Resposta recebida! Status: {}", response.getStatusCode());
+                
+                responseData.put("success", response.getStatusCode().is2xxSuccessful());
+                responseData.put("status", response.getStatusCode().toString());
+                responseData.put("response", response.getBody());
+                
+            } catch (Exception e) {
+                logger.error("Falha ao testar conexão com OpenRouter", e);
+                
+                responseData.put("success", false);
+                responseData.put("error", e.getMessage());
+                
+                // Para erros HTTP, obter mais detalhes
+                if (e instanceof org.springframework.web.client.HttpClientErrorException) {
+                    org.springframework.web.client.HttpClientErrorException httpEx = 
+                        (org.springframework.web.client.HttpClientErrorException) e;
+                    
+                    responseData.put("errorStatus", httpEx.getStatusCode().toString());
+                    responseData.put("errorBody", httpEx.getResponseBodyAsString());
+                    
+                    // Instruções para erro 401
+                    if (httpEx.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                        responseData.put("solutionTips", Arrays.asList(
+                            "Verifique se a chave API está correta",
+                            "Confirme se a chave está ativa na sua conta OpenRouter",
+                            "Teste o formato da chave (deve começar com 'sk-or-')",
+                            "Verifique se você tem créditos suficientes na sua conta"
+                        ));
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            logger.error("Erro ao configurar teste de conexão", e);
+            responseData.put("success", false);
+            responseData.put("error", "Erro ao configurar teste: " + e.getMessage());
+        }
+        
+        return ResponseEntity.ok(responseData);
     }
 } 
