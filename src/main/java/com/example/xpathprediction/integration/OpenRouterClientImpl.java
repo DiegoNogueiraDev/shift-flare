@@ -65,12 +65,20 @@ public class OpenRouterClientImpl implements OpenRouterClient {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + apiKey);
-            headers.set("HTTP-Referer", siteUrl);
-            headers.set("X-Title", siteName);
+            
+            // Adicionar headers opcionais apenas se estiverem presentes
+            if (siteUrl != null && !siteUrl.isEmpty()) {
+                headers.set("HTTP-Referer", siteUrl);
+            }
+            
+            if (siteName != null && !siteName.isEmpty()) {
+                headers.set("X-Title", siteName);
+            }
             
             HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(payload, headers);
 
             logger.info("Enviando dados para o OpenRouter: {}", openRouterUrl);
+            logger.debug("Usando modelo: {}", model);
             
             try {
                 ResponseEntity<Map> responseEntity = restTemplate.postForEntity(

@@ -13,7 +13,7 @@
   
   <groupId>com.example</groupId>
   <artifactId>xpathprediction</artifactId>
-  <version>1.0.0-${buildNumber}</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>XpathPrediction Microservice</name>
 
