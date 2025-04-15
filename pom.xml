@@ -13,13 +13,12 @@
   
   <groupId>com.shiftflare</groupId>
   <artifactId>shift-flare</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
   <packaging>jar</packaging>
   <name>Shift Flare Microservice</name>
 
   <properties>
     <java.version>11</java.version>
-    <buildNumber>0</buildNumber>
   </properties>
 
   <scm>
@@ -63,23 +62,15 @@
   </dependencies>
 
   <build>
-    <finalName>${project.artifactId}-${project.version}</finalName>
     <plugins>
-      <!-- Plugin do Spring Boot para empacotamento -->
-      <plugin>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-      
-      <!-- Plugin para incremento automático da versão -->
+      <!-- Plugin para incremento automático da versão (executa primeiro) -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
         <version>3.1.0</version>
         <executions>
           <execution>
-            <id>buildnumber</id>
-            <phase>validate</phase>
+            <phase>generate-resources</phase>
             <goals>
               <goal>create</goal>
             </goals>
@@ -91,9 +82,48 @@
             <item>buildNumber</item>
           </items>
           <doCheck>false</doCheck>
-          <doUpdate>false</doUpdate>
+          <doUpdate>true</doUpdate>
           <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
           <buildNumberPropertiesFileLocation>${project.basedir}/config/buildNumber.properties</buildNumberPropertiesFileLocation>
+        </configuration>
+      </plugin>
+      
+      <!-- Plugin para exibir propriedades (debug) -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo>BuildNumber: ${buildNumber}</echo>
+                <echo>Gerando arquivo: shift-flare-1.0.${buildNumber}</echo>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Plugin do Spring Boot para empacotamento -->
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <finalName>shift-flare-1.0.${buildNumber}</finalName>
+        </configuration>
+      </plugin>
+      
+      <!-- Plugin para configurar nome do JAR -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <finalName>shift-flare-1.0.${buildNumber}</finalName>
         </configuration>
       </plugin>
     </plugins>
