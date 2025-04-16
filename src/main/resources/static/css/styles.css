@@ -1,0 +1,196 @@
+/* Variáveis de cores */
+:root {
+  --purple: #8E2DE2;
+  --pink: #FF0080;
+  --red: #FF416C;
+  --orange: #FF8C00;
+  --gradient: linear-gradient(90deg, var(--purple), var(--pink), var(--red), var(--orange));
+  --gradient-hover: linear-gradient(45deg, var(--purple), var(--pink), var(--red), var(--orange));
+}
+
+/* Estilos gerais */
+body {
+  font-family: 'Poppins', sans-serif;
+  padding-top: 72px;
+}
+
+/* Navbar */
+#main-navbar {
+  background: var(--gradient);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Hero Section */
+.hero-section {
+  background: var(--gradient);
+  color: white;
+  padding: 100px 0;
+  margin-top: -20px;
+}
+
+.btn-primary {
+  background: white;
+  color: var(--purple);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--gradient);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+}
+
+/* Features Section */
+.features-section {
+  background: #f8f9fa;
+  padding: 80px 0;
+}
+
+.feature-card {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card .card-header {
+  background: var(--gradient);
+  color: white;
+  padding: 20px;
+  border: none;
+}
+
+.feature-card .card-body {
+  padding: 25px;
+}
+
+.feature-list {
+  padding-left: 20px;
+  margin-top: 15px;
+}
+
+.btn-outline-primary {
+  color: var(--purple);
+  border-color: var(--purple);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background: var(--gradient);
+  color: white;
+  border: 2px solid white;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* FAQ Section */
+.faq-section {
+  padding: 80px 0;
+  background-color: #ffffff;
+}
+
+.accordion-button:not(.collapsed) {
+  background: var(--gradient);
+  color: white;
+}
+
+.accordion-button:focus {
+  box-shadow: 0 0 0 0.25rem rgba(142, 45, 226, 0.25);
+}
+
+/* Creator Section */
+.creator-section {
+  background: var(--gradient);
+  color: white;
+  padding: 80px 0;
+}
+
+.btn-try {
+  background: white;
+  color: var(--purple);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+}
+
+.btn-try:hover {
+  background: var(--gradient);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+}
+
+/* Botão genérico light (usado na página Hercules) */
+.btn-light {
+  transition: all 0.3s ease;
+}
+
+.btn-light:hover {
+  background: var(--gradient);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+}
+
+/* Footer */
+.footer {
+  background: var(--gradient);
+  color: white;
+}
+
+/* Animations */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background: var(--gradient);
+  background-size: 200% 200%;
+  animation: gradient-shift 5s ease infinite;
+}
+
+/* Media Queries */
+@media (max-width: 992px) {
+  .hero-section {
+    padding: 60px 0;
+  }
+  
+  .features-section, 
+  .faq-section, 
+  .creator-section {
+    padding: 60px 0;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding-top: 60px;
+  }
+  
+  .hero-section {
+    padding: 40px 0;
+  }
+  
+  .feature-card {
+    margin-bottom: 20px;
+  }
+} 

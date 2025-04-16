@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XPath-Prediction - Shift-Flare</title>
+  <meta name="description" content="XPath-Prediction - Gere XPaths dinâmicos com inteligência artificial">
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  
+  <!-- Google Fonts - Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="img/flare-logo.png" type="image/png">
+</head>
+<body>
+  <!-- Navbar Component -->
+  <div data-component="navbar" data-activate="true"></div>
+  
+  <!-- Main Content -->
+  <main class="pt-5">
+    <div class="container mt-5 pt-3">
+      <h1 class="text-center fw-bold mb-5">XPath-Prediction - XPaths Dinâmicos</h1>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <p class="lead mb-4">
+            O XPath-Prediction é uma solução avançada para geração de XPaths dinâmicos que reduz drasticamente a manutenção de automações. 
+            Utilizando técnicas de inteligência artificial através do modelo Hercules IA interno, o sistema analisa a estrutura do DOM e cria seletores 
+            robustos que resistem a mudanças de interface.
+          </p>
+          
+          <div class="bg-light p-4 rounded-3 mb-5 shadow-sm">
+            <h2 class="h3 mb-4">Principais Benefícios</h2>
+            <ul class="fs-5">
+              <li class="mb-2">Redução de até 80% em manutenções por quebra de XPath</li>
+              <li class="mb-2">Análise inteligente de elementos DOM</li>
+              <li class="mb-2">Adaptação automática a mudanças de interface</li>
+              <li class="mb-2">Maior estabilidade em processos críticos</li>
+              <li class="mb-2">Economia significativa de tempo e recursos</li>
+            </ul>
+          </div>
+          
+          <h2 class="h3 mb-4">Como Funciona</h2>
+          <p class="mb-4">
+            O XPath-Prediction utiliza um algoritmo avançado (Hercules IA) para analisar vários atributos de cada elemento, incluindo:
+          </p>
+          
+          <div class="row g-4 mb-5">
+            <div class="col-md-6">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body animate-gradient text-white">
+                  <h3 class="h5 mb-3">Análise de Atributos</h3>
+                  <p>Avalia IDs, classes, texto, posição relativa e outros atributos para criar um perfil único do elemento.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body animate-gradient text-white">
+                  <h3 class="h5 mb-3">Avaliação de Contexto</h3>
+                  <p>Considera o contexto do elemento na página, incluindo elementos pais e filhos para maior precisão.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body animate-gradient text-white">
+                  <h3 class="h5 mb-3">Aprendizado de Padrões</h3>
+                  <p>Aprende com o tempo quais atributos são mais estáveis para cada tipo de elemento.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card h-100 shadow-sm border-0">
+                <div class="card-body animate-gradient text-white">
+                  <h3 class="h5 mb-3">Geração de Alternativas</h3>
+                  <p>Cria múltiplos XPaths alternativos para cada elemento, com fallbacks automáticos.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="text-center p-5 animate-gradient text-white rounded-3 shadow mb-5">
+            <h2 class="mb-3">Solicite uma Demonstração</h2>
+            <p class="fs-5 mb-4">
+              Veja como o XPath-Prediction pode revolucionar suas automações e reduzir drasticamente o tempo de manutenção.
+            </p>
+            <a href="#" class="btn btn-light px-4 py-2">
+              Agendar Demo
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer Component -->
+  <div data-component="footer"></div>
+  
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Component Loader Script -->
+  <script src="js/component-loader.js"></script>
+  
+  <!-- Utilities Script -->
+  <script src="js/utils.js"></script>
+  
+  <!-- Executa verificação de âncora antes mesmo do DOM estar completamente carregado -->
+  <script>
+    // Para links diretos com âncora na página Hercules
+    (function() {
+      const hash = window.location.hash;
+      
+      if (hash) {
+        console.log('Verificação imediata de hash:', hash);
+        // Lista de âncoras que pertencem à página inicial
+        const mainPageAnchors = ['#ai-features', '#faq', '#creator'];
+        
+        if (mainPageAnchors.includes(hash)) {
+          console.log('Redirecionamento imediato para a página inicial');
+          const basePath = window.location.pathname.includes('/static/') 
+                          ? window.location.pathname.match(/(.*\/static\/)/)[1] 
+                          : '';
+          
+          window.location.href = basePath + 'index.html' + hash;
+        }
+      }
+    })();
+  </script>
+</body>
+</html> 
