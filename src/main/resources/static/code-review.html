@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Code Review IA - Shift-Flare</title>
+  <meta name="description" content="Code Review IA - Análise automatizada de código com inteligência artificial">
+  
+  <!-- Bootstrap CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="css/bootstrap-icons.css">
+  
+  <!-- Google Fonts - Poppins -->
+  <link rel="stylesheet" href="css/poppins.css">
+  
+  <!-- Highlight.js para syntax highlighting -->
+  <link rel="stylesheet" href="css/highlight/atom-one-dark.min.css">
+  <script src="js/highlight.min.js"></script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="img/flare-logo.png" type="image/png">
+  
+  <style>
+    .chat-container {
+      height: 65vh;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .message {
+      padding: 15px;
+      margin: 10px;
+      border-radius: 8px;
+      max-width: 85%;
+    }
+    
+    .user-message {
+      background-color: #e6f3ff;
+      margin-left: auto;
+    }
+    
+    .bot-message {
+      background: var(--gradient);
+      color: white;
+      margin-right: auto;
+    }
+    
+    .code-input {
+      border-radius: 8px;
+      min-height: 150px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    
+    .feedback-icons {
+      color: white;
+      cursor: pointer;
+    }
+    
+    .feedback-icons i:hover {
+      transform: scale(1.2);
+    }
+    
+    .loading-dots {
+      display: inline-flex;
+    }
+    
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      margin: 0 3px;
+      background-color: white;
+      border-radius: 50%;
+      display: inline-block;
+      animation: loading 1.4s infinite ease-in-out both;
+    }
+    
+    .loading-dots span:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+    
+    .loading-dots span:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+    
+    @keyframes loading {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
+    /* Estilos para resultados de análise de código */
+    .code-result {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .issue-container {
+      margin-bottom: 12px;
+      padding: 10px;
+      border-left: 4px solid;
+      background-color: rgba(0,0,0,0.03);
+    }
+    
+    .issue-critical {
+      border-color: #dc3545;
+    }
+    
+    .issue-warning {
+      border-color: #ffc107;
+    }
+    
+    .issue-info {
+      border-color: #0dcaf0;
+    }
+    
+    .issue-improvement {
+      border-color: #198754;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar Component -->
+  <div data-component="navbar" data-activate="true"></div>
+  
+  <!-- Main Content -->
+  <main class="pt-5">
+    <div class="container mt-5 pt-3">
+      <h1 class="text-center fw-bold mb-3">Code Review IA</h1>
+      <p class="text-center mb-5">Análise automatizada de código com sugestões de melhoria e detecção de problemas</p>
+      
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <!-- Chat Container -->
+          <div class="chat-container p-3 mb-4" id="chatContainer">
+            <!-- Mensagem do bot inicial -->
+            <div class="message bot-message">
+              <h5>Code Review IA</h5>
+              <p>Olá! Cole seu código abaixo para que eu possa analisá-lo. Posso detectar problemas potenciais, 
+              sugerir melhorias de código e verificar boas práticas de desenvolvimento.</p>
+              <p>Suporto diversas linguagens, incluindo Java, TypeScript, JavaScript, Python, C#, e muitas outras.</p>
+            </div>
+            
+            <!-- Mensagens dinâmicas aparecerão aqui -->
+          </div>
+          
+          <!-- Input do usuário -->
+          <div class="code-input-container mb-4">
+            <textarea class="form-control code-input" id="codeInput" 
+                      placeholder="Cole seu código aqui para análise..." rows="6"></textarea>
+          </div>
+          
+          <!-- Botões de envio e opções -->
+          <div class="d-flex justify-content-between mb-5">
+            <div>
+              <select class="form-select me-2" id="languageSelect">
+                <option value="auto">Detectar linguagem</option>
+                <option value="java">Java</option>
+                <option value="typescript">TypeScript</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="csharp">C#</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="sql">SQL</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-outline-secondary me-2" id="clearBtn">Limpar</button>
+              <button class="btn btn-primary" id="analyzeBtn">
+                <i class="bi bi-code-slash me-2"></i>Analisar Código
+              </button>
+            </div>
+          </div>
+          
+          <!-- Feature Information -->
+          <div class="card mb-5">
+            <div class="card-header animate-gradient text-white">
+              <h3 class="h5 mb-0">Recursos da Análise de Código</h3>
+            </div>
+            <div class="card-body">
+              <ul class="mb-0">
+                <li><strong>Detecção de bugs potenciais</strong> - Identificação de problemas como null pointers, vazamentos de memória e race conditions</li>
+                <li><strong>Sugestões de otimização</strong> - Recomendações para melhorar a performance e eficiência do código</li>
+                <li><strong>Verificação de padrões</strong> - Análise de aderência a padrões como Clean Code, SOLID e melhores práticas</li>
+                <li><strong>Segurança</strong> - Identificação de vulnerabilidades comuns e problemas de segurança no código</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer Component -->
+  <div data-component="footer"></div>
+  
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Component Loader Script -->
+  <script src="js/component-loader.js"></script>
+  
+  <!-- Utilities Script -->
+  <script src="js/utils.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatContainer = document.getElementById('chatContainer');
+      const codeInput = document.getElementById('codeInput');
+      const languageSelect = document.getElementById('languageSelect');
+      const analyzeBtn = document.getElementById('analyzeBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      
+      // Inicializa syntax highlighting
+      hljs.highlightAll();
+      
+      // Simula a API de análise de código
+      const analyzeCode = async (code, language) => {
+        // Mostra a mensagem do usuário
+        addUserMessage(code);
+        
+        // Mostra indicador de carregamento
+        addLoadingIndicator();
+        
+        // Simula delay de API - aqui conectaríamos com a API real
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Remove indicador de carregamento
+        removeLoadingIndicator();
+        
+        // Resposta simulada - seria substituída pela resposta da API real
+        const mockResponse = {
+          summary: "Analisei seu código e encontrei alguns pontos que podem ser melhorados.",
+          issues: [
+            {
+              type: "warning",
+              description: "Possível vazamento de memória devido a recursos não fechados.",
+              line: 12,
+              suggestion: "Utilize try-with-resources ou garanta que todos os recursos sejam fechados adequadamente."
+            },
+            {
+              type: "improvement",
+              description: "O método é muito longo e pode ser dividido em funções menores.",
+              line: 5,
+              suggestion: "Considere extrair as operações lógicas para métodos separados com responsabilidades únicas."
+            },
+            {
+              type: "critical",
+              description: "Possível null pointer exception ao acessar propriedade sem verificação.",
+              line: 18,
+              suggestion: "Adicione uma verificação de nulidade antes de acessar esta propriedade."
+            }
+          ],
+          overallScore: 75
+        };
+        
+        // Adiciona resposta do bot
+        addBotResponse(mockResponse);
+      };
+      
+      // Adiciona mensagem do usuário ao chat
+      const addUserMessage = (code) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user-message';
+        
+        const pre = document.createElement('pre');
+        pre.className = 'mb-0';
+        
+        const codeElement = document.createElement('code');
+        codeElement.textContent = code;
+        codeElement.className = languageSelect.value !== 'auto' ? languageSelect.value : '';
+        
+        pre.appendChild(codeElement);
+        messageDiv.appendChild(pre);
+        chatContainer.appendChild(messageDiv);
+        
+        // Aplica syntax highlighting
+        hljs.highlightElement(codeElement);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Adiciona resposta do bot ao chat
+      const addBotResponse = (response) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot-message';
+        
+        const title = document.createElement('h5');
+        title.textContent = 'Análise de Código';
+        messageDiv.appendChild(title);
+        
+        const summary = document.createElement('p');
+        summary.textContent = response.summary;
+        messageDiv.appendChild(summary);
+        
+        // Adiciona score
+        const scoreDiv = document.createElement('div');
+        scoreDiv.className = 'mb-3';
+        scoreDiv.innerHTML = `<strong>Pontuação de Qualidade:</strong> ${response.overallScore}/100`;
+        messageDiv.appendChild(scoreDiv);
+        
+        // Adiciona issues encontradas
+        const issuesContainer = document.createElement('div');
+        issuesContainer.className = 'code-result p-3';
+        
+        response.issues.forEach(issue => {
+          const issueDiv = document.createElement('div');
+          issueDiv.className = `issue-container issue-${issue.type}`;
+          
+          const issueTitle = document.createElement('div');
+          issueTitle.innerHTML = `<strong>${getIssueTypeLabel(issue.type)}:</strong> ${issue.description}`;
+          issueDiv.appendChild(issueTitle);
+          
+          const issueLine = document.createElement('div');
+          issueLine.className = 'small';
+          issueLine.innerHTML = `<strong>Linha:</strong> ${issue.line}`;
+          issueDiv.appendChild(issueLine);
+          
+          const issueSuggestion = document.createElement('div');
+          issueSuggestion.className = 'mt-2';
+          issueSuggestion.innerHTML = `<strong>Sugestão:</strong> ${issue.suggestion}`;
+          issueDiv.appendChild(issueSuggestion);
+          
+          issuesContainer.appendChild(issueDiv);
+        });
+        
+        messageDiv.appendChild(issuesContainer);
+        
+        // Adiciona ícones de feedback
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'feedback-icons mt-3 text-end';
+        feedbackDiv.innerHTML = `
+          <i class="bi bi-hand-thumbs-up me-3" title="Útil"></i>
+          <i class="bi bi-hand-thumbs-down" title="Não Útil"></i>
+        `;
+        messageDiv.appendChild(feedbackDiv);
+        
+        chatContainer.appendChild(messageDiv);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Adiciona indicador de carregamento
+      const addLoadingIndicator = () => {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message bot-message loading-message';
+        loadingDiv.innerHTML = `
+          <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        `;
+        chatContainer.appendChild(loadingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Remove indicador de carregamento
+      const removeLoadingIndicator = () => {
+        const loadingMessage = document.querySelector('.loading-message');
+        if (loadingMessage) {
+          loadingMessage.remove();
+        }
+      };
+      
+      // Converte tipo de issue para label
+      const getIssueTypeLabel = (type) => {
+        switch(type) {
+          case 'critical': return 'Crítico';
+          case 'warning': return 'Aviso';
+          case 'info': return 'Informação';
+          case 'improvement': return 'Melhoria';
+          default: return 'Problema';
+        }
+      };
+      
+      // Event listeners
+      analyzeBtn.addEventListener('click', () => {
+        const code = codeInput.value.trim();
+        if (code) {
+          analyzeCode(code, languageSelect.value);
+          codeInput.value = '';
+        }
+      });
+      
+      clearBtn.addEventListener('click', () => {
+        codeInput.value = '';
+      });
+      
+      // Enter para enviar (Ctrl+Enter)
+      codeInput.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+          analyzeBtn.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

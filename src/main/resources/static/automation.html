@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Automação - Shift-Flare</title>
+  <meta name="description" content="Automação - Crie scripts de automação inteligentes para seus processos">
+  
+  <!-- Bootstrap CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="css/bootstrap-icons.css">
+  
+  <!-- Google Fonts - Poppins -->
+  <link rel="stylesheet" href="css/poppins.css">
+  
+  <!-- Highlight.js para syntax highlighting -->
+  <link rel="stylesheet" href="css/highlight/atom-one-dark.min.css">
+  <script src="js/highlight.min.js"></script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="img/flare-logo.png" type="image/png">
+  
+  <style>
+    .chat-container {
+      height: 65vh;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .message {
+      padding: 15px;
+      margin: 10px;
+      border-radius: 8px;
+      max-width: 85%;
+    }
+    
+    .user-message {
+      background-color: #e6f3ff;
+      margin-left: auto;
+    }
+    
+    .bot-message {
+      background: var(--gradient);
+      color: white;
+      margin-right: auto;
+    }
+    
+    .code-input {
+      border-radius: 8px;
+      min-height: 150px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    
+    .feedback-icons {
+      color: white;
+      cursor: pointer;
+    }
+    
+    .feedback-icons i:hover {
+      transform: scale(1.2);
+    }
+    
+    .loading-dots {
+      display: inline-flex;
+    }
+    
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      margin: 0 3px;
+      background-color: white;
+      border-radius: 50%;
+      display: inline-block;
+      animation: loading 1.4s infinite ease-in-out both;
+    }
+    
+    .loading-dots span:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+    
+    .loading-dots span:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+    
+    @keyframes loading {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
+    /* Estilos para testes gerados */
+    .test-step {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      background-color: rgba(255,255,255,0.1);
+    }
+    
+    .step-number {
+      min-width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background-color: rgba(255,255,255,0.3);
+      margin-right: 12px;
+      font-weight: 500;
+    }
+    
+    .step-content {
+      flex: 1;
+    }
+    
+    .action-line {
+      display: flex;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .action-icon {
+      margin-right: 10px;
+      font-size: 1.1rem;
+    }
+    
+    .selector-badge {
+      font-size: 0.8em;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background-color: rgba(255,255,255,0.2);
+      margin-left: 8px;
+    }
+    
+    .test-details {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      background-color: rgba(255,255,255,0.1);
+    }
+    
+    .detail-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    
+    .detail-icon {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar Component -->
+  <div data-component="navbar" data-activate="true"></div>
+  
+  <!-- Main Content -->
+  <main class="pt-5">
+    <div class="container mt-5 pt-3">
+      <h1 class="text-center fw-bold mb-3">Automação Inteligente</h1>
+      <p class="text-center mb-5">Crie scripts de automação robustos utilizando inteligência artificial</p>
+      
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <!-- Chat Container -->
+          <div class="chat-container p-3 mb-4" id="chatContainer">
+            <!-- Mensagem do bot inicial -->
+            <div class="message bot-message">
+              <h5>Assistente de Automação</h5>
+              <p>Olá! Descreva abaixo o processo que você deseja automatizar. Você pode escrever em linguagem natural, 
+              incluindo detalhes sobre a aplicação, ações a serem executadas e validações necessárias.</p>
+              <p>Exemplo: "Preciso criar um teste para entrar no sistema ERP, navegar até o módulo de vendas, preencher um novo pedido e verificar se o pedido foi criado com sucesso."</p>
+            </div>
+            
+            <!-- Mensagens dinâmicas aparecerão aqui -->
+          </div>
+          
+          <!-- Input do usuário -->
+          <div class="code-input-container mb-4">
+            <textarea class="form-control code-input" id="codeInput" 
+                      placeholder="Descreva o processo que deseja automatizar..." rows="6"></textarea>
+          </div>
+          
+          <!-- Botões de envio e opções -->
+          <div class="d-flex justify-content-between mb-5">
+            <div>
+              <select class="form-select me-2" id="frameworkSelect">
+                <option value="selenium">Selenium WebDriver</option>
+                <option value="cypress">Cypress</option>
+                <option value="playwright">Playwright</option>
+                <option value="appium">Appium (Mobile)</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-outline-secondary me-2" id="clearBtn">Limpar</button>
+              <button class="btn btn-primary" id="generateBtn">
+                <i class="bi bi-gear me-2"></i>Gerar Automação
+              </button>
+            </div>
+          </div>
+          
+          <!-- Feature Information -->
+          <div class="card mb-5">
+            <div class="card-header animate-gradient text-white">
+              <h3 class="h5 mb-0">Recursos de Automação Inteligente</h3>
+            </div>
+            <div class="card-body">
+              <ul class="mb-0">
+                <li><strong>Geração de scripts</strong> - Criação de scripts de automação a partir de descrições em linguagem natural</li>
+                <li><strong>Seletores robustos</strong> - Utilização da tecnologia XPath-Prediction para seletores que resistem a mudanças</li>
+                <li><strong>Multi-framework</strong> - Suporte para Selenium, Cypress, Playwright e Appium</li>
+                <li><strong>Cenários complexos</strong> - Capacidade de gerar casos de teste para fluxos complexos com múltiplas etapas</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer Component -->
+  <div data-component="footer"></div>
+  
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Component Loader Script -->
+  <script src="js/component-loader.js"></script>
+  
+  <!-- Utilities Script -->
+  <script src="js/utils.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatContainer = document.getElementById('chatContainer');
+      const codeInput = document.getElementById('codeInput');
+      const frameworkSelect = document.getElementById('frameworkSelect');
+      const generateBtn = document.getElementById('generateBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      
+      // Inicializa syntax highlighting
+      hljs.highlightAll();
+      
+      // Simula a API de geração de automação
+      const generateAutomation = async (description, framework) => {
+        // Mostra a mensagem do usuário
+        addUserMessage(description);
+        
+        // Mostra indicador de carregamento
+        addLoadingIndicator();
+        
+        // Simula delay de API - aqui conectaríamos com a API real
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // Remove indicador de carregamento
+        removeLoadingIndicator();
+        
+        // Resposta simulada - seria substituída pela resposta da API real
+        const mockResponse = {
+          success: true,
+          testName: "Login e Navegação para Módulo de Vendas",
+          framework: framework,
+          description: "Teste automatizado para login no sistema ERP, navegação até o módulo de vendas, criação de um novo pedido e validação.",
+          steps: [
+            {
+              number: 1,
+              action: "navigate",
+              description: "Abrir o sistema ERP",
+              code: `driver.get("https://erp.example.com");`,
+              selector: null
+            },
+            {
+              number: 2,
+              action: "input",
+              description: "Preencher usuário",
+              code: `driver.findElement(By.id("username")).sendKeys("admin");`,
+              selector: "#username"
+            },
+            {
+              number: 3,
+              action: "input",
+              description: "Preencher senha",
+              code: `driver.findElement(By.id("password")).sendKeys("senha123");`,
+              selector: "#password"
+            },
+            {
+              number: 4,
+              action: "click",
+              description: "Clicar no botão de login",
+              code: `driver.findElement(By.xpath("//button[contains(text(), 'Entrar')]")).click();`,
+              selector: "xpath=//button[contains(text(), 'Entrar')]"
+            },
+            {
+              number: 5,
+              action: "wait",
+              description: "Aguardar carregamento da página inicial",
+              code: `WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));\nwait.until(ExpectedConditions.visibilityOfElementLocated(By.className("dashboard")));`,
+              selector: ".dashboard"
+            },
+            {
+              number: 6,
+              action: "click",
+              description: "Acessar o menu Vendas",
+              code: `driver.findElement(By.xpath("//a[contains(text(), 'Vendas')]")).click();`,
+              selector: "xpath=//a[contains(text(), 'Vendas')]"
+            },
+            {
+              number: 7,
+              action: "click",
+              description: "Clicar no botão Novo Pedido",
+              code: `driver.findElement(By.id("new-order-btn")).click();`,
+              selector: "#new-order-btn"
+            },
+            {
+              number: 8,
+              action: "input",
+              description: "Preencher número do cliente",
+              code: `driver.findElement(By.name("customer_id")).sendKeys("1001");`,
+              selector: "name=customer_id"
+            },
+            {
+              number: 9,
+              action: "click",
+              description: "Salvar pedido",
+              code: `driver.findElement(By.cssSelector(".save-button")).click();`,
+              selector: ".save-button"
+            },
+            {
+              number: 10,
+              action: "assertion",
+              description: "Verificar se o pedido foi criado com sucesso",
+              code: `assertTrue(driver.findElement(By.cssSelector(".success-message")).isDisplayed());`,
+              selector: ".success-message"
+            }
+          ],
+          generatedCode: getCodeTemplate(framework)
+        };
+        
+        // Adiciona resposta do bot
+        addBotResponse(mockResponse);
+      };
+      
+      // Adiciona mensagem do usuário ao chat
+      const addUserMessage = (text) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user-message';
+        
+        const textParagraph = document.createElement('p');
+        textParagraph.className = 'mb-0';
+        textParagraph.textContent = text;
+        
+        messageDiv.appendChild(textParagraph);
+        chatContainer.appendChild(messageDiv);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Adiciona resposta do bot ao chat
+      const addBotResponse = (response) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot-message';
+        
+        const title = document.createElement('h5');
+        title.textContent = 'Automação Gerada';
+        messageDiv.appendChild(title);
+        
+        const summary = document.createElement('p');
+        summary.textContent = response.description;
+        messageDiv.appendChild(summary);
+        
+        // Adiciona detalhes do teste
+        const detailsDiv = document.createElement('div');
+        detailsDiv.className = 'test-details';
+        
+        detailsDiv.innerHTML = `
+          <div class="detail-item">
+            <i class="bi bi-journal-code detail-icon"></i>
+            <strong>Nome do Teste:</strong> ${response.testName}
+          </div>
+          <div class="detail-item">
+            <i class="bi bi-gear detail-icon"></i>
+            <strong>Framework:</strong> ${getFrameworkDisplayName(response.framework)}
+          </div>
+          <div class="detail-item">
+            <i class="bi bi-list-ol detail-icon"></i>
+            <strong>Passos:</strong> ${response.steps.length}
+          </div>
+        `;
+        
+        messageDiv.appendChild(detailsDiv);
+        
+        // Adiciona etapas do teste
+        const stepsTitle = document.createElement('h6');
+        stepsTitle.className = 'mt-4 mb-3';
+        stepsTitle.textContent = 'Etapas do Teste:';
+        messageDiv.appendChild(stepsTitle);
+        
+        const stepsContainer = document.createElement('div');
+        stepsContainer.className = 'mb-3';
+        
+        response.steps.forEach(step => {
+          const stepDiv = document.createElement('div');
+          stepDiv.className = 'test-step';
+          
+          const stepNumber = document.createElement('div');
+          stepNumber.className = 'step-number';
+          stepNumber.textContent = step.number;
+          
+          const stepContent = document.createElement('div');
+          stepContent.className = 'step-content';
+          
+          const actionLine = document.createElement('div');
+          actionLine.className = 'action-line';
+          
+          const actionIcon = document.createElement('i');
+          actionIcon.className = `bi ${getActionIcon(step.action)} action-icon`;
+          
+          const actionText = document.createElement('span');
+          actionText.textContent = step.description;
+          
+          actionLine.appendChild(actionIcon);
+          actionLine.appendChild(actionText);
+          
+          if (step.selector) {
+            const selectorBadge = document.createElement('span');
+            selectorBadge.className = 'selector-badge';
+            selectorBadge.textContent = step.selector;
+            actionLine.appendChild(selectorBadge);
+          }
+          
+          stepContent.appendChild(actionLine);
+          
+          stepDiv.appendChild(stepNumber);
+          stepDiv.appendChild(stepContent);
+          stepsContainer.appendChild(stepDiv);
+        });
+        
+        messageDiv.appendChild(stepsContainer);
+        
+        // Adiciona código gerado
+        const codeTitle = document.createElement('h6');
+        codeTitle.className = 'mt-4 mb-2';
+        codeTitle.textContent = 'Código Gerado:';
+        messageDiv.appendChild(codeTitle);
+        
+        const codeContainer = document.createElement('pre');
+        codeContainer.className = 'diff-container p-0 m-0';
+        
+        const language = getLanguageForFramework(response.framework);
+        
+        const codeElement = document.createElement('code');
+        codeElement.className = language;
+        codeElement.textContent = response.generatedCode;
+        
+        codeContainer.appendChild(codeElement);
+        messageDiv.appendChild(codeContainer);
+        
+        // Aplicar syntax highlighting depois de adicionar ao DOM
+        setTimeout(() => {
+          hljs.highlightElement(codeElement);
+        }, 0);
+        
+        // Adiciona ícones de feedback
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'feedback-icons mt-3 text-end';
+        feedbackDiv.innerHTML = `
+          <i class="bi bi-hand-thumbs-up me-3" title="Útil"></i>
+          <i class="bi bi-hand-thumbs-down" title="Não Útil"></i>
+        `;
+        messageDiv.appendChild(feedbackDiv);
+        
+        chatContainer.appendChild(messageDiv);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Adiciona indicador de carregamento
+      const addLoadingIndicator = () => {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message bot-message loading-message';
+        loadingDiv.innerHTML = `
+          <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        `;
+        chatContainer.appendChild(loadingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Remove indicador de carregamento
+      const removeLoadingIndicator = () => {
+        const loadingMessage = document.querySelector('.loading-message');
+        if (loadingMessage) {
+          loadingMessage.remove();
+        }
+      };
+      
+      // Retorna ícone para o tipo de ação
+      const getActionIcon = (action) => {
+        switch(action) {
+          case 'navigate': return 'bi-globe';
+          case 'click': return 'bi-mouse';
+          case 'input': return 'bi-input-cursor-text';
+          case 'wait': return 'bi-hourglass-split';
+          case 'assertion': return 'bi-check-circle';
+          case 'select': return 'bi-list';
+          default: return 'bi-code-slash';
+        }
+      };
+      
+      // Retorna nome de exibição para o framework
+      const getFrameworkDisplayName = (framework) => {
+        switch(framework) {
+          case 'selenium': return 'Selenium WebDriver (Java)';
+          case 'cypress': return 'Cypress (JavaScript)';
+          case 'playwright': return 'Playwright (TypeScript)';
+          case 'appium': return 'Appium (Java)';
+          default: return framework;
+        }
+      };
+      
+      // Retorna linguagem para o framework (para highlighting)
+      const getLanguageForFramework = (framework) => {
+        switch(framework) {
+          case 'selenium': return 'java';
+          case 'cypress': return 'javascript';
+          case 'playwright': return 'typescript';
+          case 'appium': return 'java';
+          default: return 'javascript';
+        }
+      };
+      
+      // Retorna template de código para o framework
+      const getCodeTemplate = (framework) => {
+        switch(framework) {
+          case 'selenium':
+            return `import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.time.Duration;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ErpLoginAndOrderTest {
+    
+    private WebDriver driver;
+    
+    @BeforeEach
+    public void setUp() {
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+    }
+    
+    @Test
+    public void testLoginAndCreateOrder() {
+        // Abrir o sistema ERP
+        driver.get("https://erp.example.com");
+        
+        // Preencher usuário
+        driver.findElement(By.id("username")).sendKeys("admin");
+        
+        // Preencher senha
+        driver.findElement(By.id("password")).sendKeys("senha123");
+        
+        // Clicar no botão de login
+        driver.findElement(By.xpath("//button[contains(text(), 'Entrar')]")).click();
+        
+        // Aguardar carregamento da página inicial
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("dashboard")));
+        
+        // Acessar o menu Vendas
+        driver.findElement(By.xpath("//a[contains(text(), 'Vendas')]")).click();
+        
+        // Clicar no botão Novo Pedido
+        driver.findElement(By.id("new-order-btn")).click();
+        
+        // Preencher número do cliente
+        driver.findElement(By.name("customer_id")).sendKeys("1001");
+        
+        // Salvar pedido
+        driver.findElement(By.cssSelector(".save-button")).click();
+        
+        // Verificar se o pedido foi criado com sucesso
+        assertTrue(driver.findElement(By.cssSelector(".success-message")).isDisplayed());
+    }
+    
+    @AfterEach
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}`;
+          
+          case 'cypress':
+            return `describe('ERP Login and Order Creation', () => {
+  it('should login and create a new order', () => {
+    // Abrir o sistema ERP
+    cy.visit('https://erp.example.com')
+    
+    // Preencher usuário
+    cy.get('#username').type('admin')
+    
+    // Preencher senha
+    cy.get('#password').type('senha123')
+    
+    // Clicar no botão de login
+    cy.contains('button', 'Entrar').click()
+    
+    // Aguardar carregamento da página inicial
+    cy.get('.dashboard').should('be.visible')
+    
+    // Acessar o menu Vendas
+    cy.contains('a', 'Vendas').click()
+    
+    // Clicar no botão Novo Pedido
+    cy.get('#new-order-btn').click()
+    
+    // Preencher número do cliente
+    cy.get('[name="customer_id"]').type('1001')
+    
+    // Salvar pedido
+    cy.get('.save-button').click()
+    
+    // Verificar se o pedido foi criado com sucesso
+    cy.get('.success-message').should('be.visible')
+  })
+})`;
+          
+          case 'playwright':
+            return `import { test, expect } from '@playwright/test';
+
+test('Login and create new order', async ({ page }) => {
+  // Abrir o sistema ERP
+  await page.goto('https://erp.example.com');
+  
+  // Preencher usuário
+  await page.fill('#username', 'admin');
+  
+  // Preencher senha
+  await page.fill('#password', 'senha123');
+  
+  // Clicar no botão de login
+  await page.click('button:has-text("Entrar")');
+  
+  // Aguardar carregamento da página inicial
+  await page.waitForSelector('.dashboard');
+  
+  // Acessar o menu Vendas
+  await page.click('a:has-text("Vendas")');
+  
+  // Clicar no botão Novo Pedido
+  await page.click('#new-order-btn');
+  
+  // Preencher número do cliente
+  await page.fill('[name="customer_id"]', '1001');
+  
+  // Salvar pedido
+  await page.click('.save-button');
+  
+  // Verificar se o pedido foi criado com sucesso
+  await expect(page.locator('.success-message')).toBeVisible();
+});`;
+          
+          case 'appium':
+            return `import io.appium.java_client.AppiumDriver;
+import io.appium.java_client.android.AndroidDriver;
+import org.openqa.selenium.By;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.net.URL;
+import java.time.Duration;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ErpMobileTest {
+    
+    private AppiumDriver driver;
+    
+    @BeforeEach
+    public void setUp() throws Exception {
+        DesiredCapabilities capabilities = new DesiredCapabilities();
+        capabilities.setCapability("platformName", "Android");
+        capabilities.setCapability("deviceName", "Android Device");
+        capabilities.setCapability("appPackage", "com.example.erp");
+        capabilities.setCapability("appActivity", "com.example.erp.MainActivity");
+        
+        driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
+    }
+    
+    @Test
+    public void testLoginAndCreateOrder() {
+        // Preencher usuário
+        driver.findElement(By.id("username")).sendKeys("admin");
+        
+        // Preencher senha
+        driver.findElement(By.id("password")).sendKeys("senha123");
+        
+        // Clicar no botão de login
+        driver.findElement(By.xpath("//android.widget.Button[contains(@text, 'Entrar')]")).click();
+        
+        // Aguardar carregamento da página inicial
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("dashboard")));
+        
+        // Acessar o menu Vendas
+        driver.findElement(By.xpath("//android.widget.TextView[contains(@text, 'Vendas')]")).click();
+        
+        // Clicar no botão Novo Pedido
+        driver.findElement(By.id("new_order_btn")).click();
+        
+        // Preencher número do cliente
+        driver.findElement(By.id("customer_id")).sendKeys("1001");
+        
+        // Salvar pedido
+        driver.findElement(By.id("save_button")).click();
+        
+        // Verificar se o pedido foi criado com sucesso
+        assertTrue(driver.findElement(By.id("success_message")).isDisplayed());
+    }
+    
+    @AfterEach
+    public void tearDown() {
+        if (driver != null) {
+            driver.quit();
+        }
+    }
+}`;
+          
+          default:
+            return `// Código de exemplo para teste automatizado`;
+        }
+      };
+      
+      // Event listeners
+      generateBtn.addEventListener('click', () => {
+        const description = codeInput.value.trim();
+        if (description) {
+          generateAutomation(description, frameworkSelect.value);
+          codeInput.value = '';
+        }
+      });
+      
+      clearBtn.addEventListener('click', () => {
+        codeInput.value = '';
+      });
+      
+      // Enter para enviar (Ctrl+Enter)
+      codeInput.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+          generateBtn.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html> 

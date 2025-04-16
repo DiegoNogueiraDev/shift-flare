@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Migração Q2→Q3 - Shift-Flare</title>
+  <meta name="description" content="Migração Inteligente - Transforme projetos Q2 para Q3 com inteligência artificial">
+  
+  <!-- Bootstrap CSS -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="css/bootstrap-icons.css">
+  
+  <!-- Google Fonts - Poppins -->
+  <link rel="stylesheet" href="css/poppins.css">
+  
+  <!-- Highlight.js para syntax highlighting -->
+  <link rel="stylesheet" href="css/highlight/atom-one-dark.min.css">
+  <script src="js/highlight.min.js"></script>
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="img/flare-logo.png" type="image/png">
+  
+  <style>
+    .chat-container {
+      height: 65vh;
+      overflow-y: auto;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .message {
+      padding: 15px;
+      margin: 10px;
+      border-radius: 8px;
+      max-width: 85%;
+    }
+    
+    .user-message {
+      background-color: #e6f3ff;
+      margin-left: auto;
+    }
+    
+    .bot-message {
+      background: var(--gradient);
+      color: white;
+      margin-right: auto;
+    }
+    
+    .code-input {
+      border-radius: 8px;
+      min-height: 150px;
+      font-family: monospace;
+      resize: vertical;
+    }
+    
+    .feedback-icons {
+      color: white;
+      cursor: pointer;
+    }
+    
+    .feedback-icons i:hover {
+      transform: scale(1.2);
+    }
+    
+    .loading-dots {
+      display: inline-flex;
+    }
+    
+    .loading-dots span {
+      width: 8px;
+      height: 8px;
+      margin: 0 3px;
+      background-color: white;
+      border-radius: 50%;
+      display: inline-block;
+      animation: loading 1.4s infinite ease-in-out both;
+    }
+    
+    .loading-dots span:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+    
+    .loading-dots span:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+    
+    @keyframes loading {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
+    /* Estilos para resultados de migração */
+    .diff-container {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      margin-top: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .diff-header {
+      background-color: #e9ecef;
+      padding: 8px 12px;
+      font-weight: 500;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    
+    .diff-added {
+      background-color: rgba(40, 167, 69, 0.1);
+      color: #28a745;
+    }
+    
+    .diff-removed {
+      background-color: rgba(220, 53, 69, 0.1);
+      color: #dc3545;
+    }
+    
+    .diff-modified {
+      background-color: rgba(255, 193, 7, 0.1);
+      color: #6c757d;
+    }
+    
+    .file-item {
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+      background-color: rgba(0,0,0,0.03);
+    }
+    
+    .file-action {
+      font-size: 0.9em;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+    
+    .action-modified {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .action-created {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .action-unchanged {
+      background-color: #e2e3e5;
+      color: #383d41;
+    }
+    
+    .stats-box {
+      padding: 12px;
+      border-radius: 8px;
+      background-color: rgba(255,255,255,0.2);
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar Component -->
+  <div data-component="navbar" data-activate="true"></div>
+  
+  <!-- Main Content -->
+  <main class="pt-5">
+    <div class="container mt-5 pt-3">
+      <h1 class="text-center fw-bold mb-3">Migração Q2→Q3</h1>
+      <p class="text-center mb-5">Transforme seus projetos Q2 para Q3 de forma automatizada e precisa</p>
+      
+      <div class="row">
+        <div class="col-lg-8 mx-auto">
+          <!-- Chat Container -->
+          <div class="chat-container p-3 mb-4" id="chatContainer">
+            <!-- Mensagem do bot inicial -->
+            <div class="message bot-message">
+              <h5>Assistente de Migração Q2→Q3</h5>
+              <p>Olá! Cole seu código Q2 abaixo para que eu possa convertê-lo para a estrutura Q3. 
+              Posso transformar componentes, ajustar a estrutura de arquivos e atualizar dependências.</p>
+              <p>A migração pode ser feita por arquivo ou por componente individual.</p>
+            </div>
+            
+            <!-- Mensagens dinâmicas aparecerão aqui -->
+          </div>
+          
+          <!-- Input do usuário -->
+          <div class="code-input-container mb-4">
+            <textarea class="form-control code-input" id="codeInput" 
+                      placeholder="Cole seu código Q2 aqui para migração..." rows="6"></textarea>
+          </div>
+          
+          <!-- Botões de envio e opções -->
+          <div class="d-flex justify-content-between mb-5">
+            <div>
+              <select class="form-select me-2" id="componentTypeSelect">
+                <option value="autodetect">Autodetectar tipo</option>
+                <option value="component">Componente UI</option>
+                <option value="service">Serviço</option>
+                <option value="model">Modelo/Interface</option>
+                <option value="config">Configuração</option>
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-outline-secondary me-2" id="clearBtn">Limpar</button>
+              <button class="btn btn-primary" id="migrateBtn">
+                <i class="bi bi-arrow-left-right me-2"></i>Migrar para Q3
+              </button>
+            </div>
+          </div>
+          
+          <!-- Feature Information -->
+          <div class="card mb-5">
+            <div class="card-header animate-gradient text-white">
+              <h3 class="h5 mb-0">Recursos de Migração Q2→Q3</h3>
+            </div>
+            <div class="card-body">
+              <ul class="mb-0">
+                <li><strong>Conversão de estrutura</strong> - Transformação da estrutura de arquivos antiga para o novo padrão Q3</li>
+                <li><strong>Adaptação de componentes</strong> - Migração de componentes para usar novas APIs e recursos</li>
+                <li><strong>Validação de compatibilidade</strong> - Verificação e correção de problemas de compatibilidade</li>
+                <li><strong>Migração inteligente</strong> - Entendimento do contexto e manutenção da lógica de negócio</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Footer Component -->
+  <div data-component="footer"></div>
+  
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Component Loader Script -->
+  <script src="js/component-loader.js"></script>
+  
+  <!-- Utilities Script -->
+  <script src="js/utils.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const chatContainer = document.getElementById('chatContainer');
+      const codeInput = document.getElementById('codeInput');
+      const componentTypeSelect = document.getElementById('componentTypeSelect');
+      const migrateBtn = document.getElementById('migrateBtn');
+      const clearBtn = document.getElementById('clearBtn');
+      
+      // Inicializa syntax highlighting
+      hljs.highlightAll();
+      
+      // Simula a API de migração
+      const migrateCode = async (code, componentType) => {
+        // Mostra a mensagem do usuário
+        addUserMessage(code);
+        
+        // Mostra indicador de carregamento
+        addLoadingIndicator();
+        
+        // Simula delay de API - aqui conectaríamos com a API real
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        
+        // Remove indicador de carregamento
+        removeLoadingIndicator();
+        
+        // Resposta simulada - seria substituída pela resposta da API real
+        const mockResponse = {
+          success: true,
+          migrationDetails: {
+            componentType: componentType !== 'autodetect' ? componentType : 'component',
+            filesModified: 3,
+            linesChanged: 24,
+            completionPercentage: 95
+          },
+          summary: "Migração concluída com sucesso! O código foi convertido para o formato Q3.",
+          files: [
+            {
+              name: "UserComponent.ts",
+              status: "modified",
+              changes: [
+                { type: "removed", content: "import { Component } from '@angular/core';" },
+                { type: "added", content: "import { Component, OnInit } from '@angular/core';" },
+                { type: "removed", content: "@Component({" },
+                { type: "added", content: "@Component({" },
+                { type: "removed", content: "  selector: 'app-user'," },
+                { type: "added", content: "  selector: 'app-user'," },
+                { type: "removed", content: "  templateUrl: './user.component.html'" },
+                { type: "added", content: "  templateUrl: './user.component.html'," },
+                { type: "added", content: "  standalone: true," },
+                { type: "added", content: "  imports: [CommonModule]" },
+                { type: "removed", content: "})" },
+                { type: "added", content: "})" }
+              ]
+            }
+          ],
+          migratedCode: `import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-user',
+  templateUrl: './user.component.html',
+  standalone: true,
+  imports: [CommonModule]
+})
+export class UserComponent implements OnInit {
+  
+  constructor(private userService: UserService) {}
+  
+  ngOnInit(): void {
+    // Código inicializado
+  }
+  
+  // Métodos da classe
+}`
+        };
+        
+        // Adiciona resposta do bot
+        addBotResponse(mockResponse);
+      };
+      
+      // Adiciona mensagem do usuário ao chat
+      const addUserMessage = (code) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user-message';
+        
+        const pre = document.createElement('pre');
+        pre.className = 'mb-0';
+        
+        const codeElement = document.createElement('code');
+        codeElement.textContent = code;
+        codeElement.className = 'typescript'; // Assume TypeScript para códigos Q2
+        
+        pre.appendChild(codeElement);
+        messageDiv.appendChild(pre);
+        chatContainer.appendChild(messageDiv);
+        
+        // Aplica syntax highlighting
+        hljs.highlightElement(codeElement);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Adiciona resposta do bot ao chat
+      const addBotResponse = (response) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot-message';
+        
+        const title = document.createElement('h5');
+        title.textContent = 'Migração Q2→Q3';
+        messageDiv.appendChild(title);
+        
+        // Adiciona estatísticas da migração
+        if (response.migrationDetails) {
+          const details = response.migrationDetails;
+          const statsDiv = document.createElement('div');
+          statsDiv.className = 'stats-box';
+          statsDiv.innerHTML = `
+            <div class="row g-2">
+              <div class="col-6">
+                <div><strong>Tipo:</strong> ${capitalizeFirstLetter(details.componentType)}</div>
+              </div>
+              <div class="col-6">
+                <div><strong>Conclusão:</strong> ${details.completionPercentage}%</div>
+              </div>
+              <div class="col-6">
+                <div><strong>Arquivos modificados:</strong> ${details.filesModified}</div>
+              </div>
+              <div class="col-6">
+                <div><strong>Linhas alteradas:</strong> ${details.linesChanged}</div>
+              </div>
+            </div>
+          `;
+          messageDiv.appendChild(statsDiv);
+        }
+        
+        const summary = document.createElement('p');
+        summary.textContent = response.summary;
+        messageDiv.appendChild(summary);
+        
+        // Adiciona informação sobre arquivos modificados
+        if (response.files && response.files.length > 0) {
+          const filesTitle = document.createElement('h6');
+          filesTitle.className = 'mt-3 mb-2';
+          filesTitle.textContent = 'Arquivos modificados:';
+          messageDiv.appendChild(filesTitle);
+          
+          const filesContainer = document.createElement('div');
+          filesContainer.className = 'mb-3';
+          
+          response.files.forEach(file => {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'file-item';
+            
+            const statusClass = getStatusClass(file.status);
+            const statusLabel = getStatusLabel(file.status);
+            
+            fileDiv.innerHTML = `
+              <div class="d-flex align-items-center justify-content-between">
+                <span><i class="bi bi-file-earmark-code me-2"></i>${file.name}</span>
+                <span class="file-action ${statusClass}">${statusLabel}</span>
+              </div>
+            `;
+            
+            filesContainer.appendChild(fileDiv);
+          });
+          
+          messageDiv.appendChild(filesContainer);
+        }
+        
+        // Adiciona código migrado
+        if (response.migratedCode) {
+          const codeTitle = document.createElement('h6');
+          codeTitle.className = 'mt-3 mb-2';
+          codeTitle.textContent = 'Código migrado:';
+          messageDiv.appendChild(codeTitle);
+          
+          const codeContainer = document.createElement('pre');
+          codeContainer.className = 'diff-container p-0 m-0';
+          
+          const codeElement = document.createElement('code');
+          codeElement.className = 'typescript';
+          codeElement.textContent = response.migratedCode;
+          
+          codeContainer.appendChild(codeElement);
+          messageDiv.appendChild(codeContainer);
+          
+          // Aplicar syntax highlighting depois de adicionar ao DOM
+          setTimeout(() => {
+            hljs.highlightElement(codeElement);
+          }, 0);
+        }
+        
+        // Adiciona mudanças detalhadas (diff)
+        if (response.files && response.files.some(file => file.changes && file.changes.length > 0)) {
+          const diffTitle = document.createElement('h6');
+          diffTitle.className = 'mt-3 mb-2';
+          diffTitle.textContent = 'Detalhes das alterações:';
+          messageDiv.appendChild(diffTitle);
+          
+          response.files.forEach(file => {
+            if (!file.changes || file.changes.length === 0) return;
+            
+            const diffContainer = document.createElement('div');
+            diffContainer.className = 'diff-container mb-3';
+            
+            const diffHeader = document.createElement('div');
+            diffHeader.className = 'diff-header';
+            diffHeader.textContent = file.name;
+            diffContainer.appendChild(diffHeader);
+            
+            const diffContent = document.createElement('div');
+            diffContent.className = 'p-2';
+            
+            file.changes.forEach(change => {
+              const lineDiv = document.createElement('div');
+              lineDiv.className = `p-1 ${getDiffClass(change.type)}`;
+              
+              const prefix = change.type === 'added' ? '+ ' : change.type === 'removed' ? '- ' : '  ';
+              lineDiv.textContent = prefix + change.content;
+              
+              diffContent.appendChild(lineDiv);
+            });
+            
+            diffContainer.appendChild(diffContent);
+            messageDiv.appendChild(diffContainer);
+          });
+        }
+        
+        // Adiciona ícones de feedback
+        const feedbackDiv = document.createElement('div');
+        feedbackDiv.className = 'feedback-icons mt-3 text-end';
+        feedbackDiv.innerHTML = `
+          <i class="bi bi-hand-thumbs-up me-3" title="Útil"></i>
+          <i class="bi bi-hand-thumbs-down" title="Não Útil"></i>
+        `;
+        messageDiv.appendChild(feedbackDiv);
+        
+        chatContainer.appendChild(messageDiv);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Adiciona indicador de carregamento
+      const addLoadingIndicator = () => {
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'message bot-message loading-message';
+        loadingDiv.innerHTML = `
+          <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        `;
+        chatContainer.appendChild(loadingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Remove indicador de carregamento
+      const removeLoadingIndicator = () => {
+        const loadingMessage = document.querySelector('.loading-message');
+        if (loadingMessage) {
+          loadingMessage.remove();
+        }
+      };
+      
+      // Converte status para classe CSS
+      const getStatusClass = (status) => {
+        switch(status) {
+          case 'modified': return 'action-modified';
+          case 'created': return 'action-created';
+          case 'unchanged': return 'action-unchanged';
+          default: return '';
+        }
+      };
+      
+      // Converte status para label em português
+      const getStatusLabel = (status) => {
+        switch(status) {
+          case 'modified': return 'Modificado';
+          case 'created': return 'Criado';
+          case 'unchanged': return 'Sem alterações';
+          default: return status;
+        }
+      };
+      
+      // Converte tipo de diff para classe CSS
+      const getDiffClass = (type) => {
+        switch(type) {
+          case 'added': return 'diff-added';
+          case 'removed': return 'diff-removed';
+          case 'modified': return 'diff-modified';
+          default: return '';
+        }
+      };
+      
+      // Capitaliza primeira letra
+      const capitalizeFirstLetter = (string) => {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      };
+      
+      // Event listeners
+      migrateBtn.addEventListener('click', () => {
+        const code = codeInput.value.trim();
+        if (code) {
+          migrateCode(code, componentTypeSelect.value);
+          codeInput.value = '';
+        }
+      });
+      
+      clearBtn.addEventListener('click', () => {
+        codeInput.value = '';
+      });
+      
+      // Enter para enviar (Ctrl+Enter)
+      codeInput.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+          migrateBtn.click();
+        }
+      });
+    });
+  </script>
+</body>
+</html> 
