@@ -22,6 +22,9 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/styles.css">
   
+  <!-- Cliente JavaScript para a API -->
+  <script src="js/ai-client.js"></script>
+  
   <!-- Favicon -->
   <link rel="icon" href="img/flare-logo.png" type="image/png">
   
@@ -249,103 +252,182 @@
       // Inicializa syntax highlighting
       hljs.highlightAll();
       
-      // Simula a API de geração de automação
-      const generateAutomation = async (description, framework) => {
+      // Função para gerar automação usando a API real
+      const generateAutomationWithAPI = async (description, framework) => {
         // Mostra a mensagem do usuário
         addUserMessage(description);
         
         // Mostra indicador de carregamento
         addLoadingIndicator();
         
-        // Simula delay de API - aqui conectaríamos com a API real
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        try {
+          // Chama a API real
+          const response = await generateAutomation(description, framework);
+          
+          // Remove indicador de carregamento
+          removeLoadingIndicator();
+          
+          if (response.success) {
+            // Processa a resposta
+            const content = response.response;
+            
+            // Cria um objeto de resposta formatado para exibição
+            const formattedResponse = {
+              success: true,
+              testName: extractTestName(content),
+              framework: framework,
+              description: extractDescription(content),
+              steps: extractTestSteps(content),
+              generatedCode: extractCode(content)
+            };
+            
+            // Adiciona resposta do bot
+            addBotResponse(formattedResponse);
+          } else {
+            // Em caso de erro
+            addErrorMessage(response.error || "Ocorreu um erro ao gerar o script de automação.");
+          }
+        } catch (error) {
+          // Remove indicador de carregamento
+          removeLoadingIndicator();
+          
+          // Adiciona mensagem de erro
+          addErrorMessage("Erro ao conectar com o serviço de automação. Por favor, tente novamente mais tarde.");
+          console.error("Erro ao gerar automação:", error);
+        }
+      };
+      
+      // Extrai o nome do teste do texto da resposta
+      const extractTestName = (content) => {
+        const nameRegex = /(?:Nome do teste|Título|Teste)[:]\s*(.*?)(?=\n|$)/i;
+        const match = content.match(nameRegex);
+        return match ? match[1].trim() : "Automação de Processo";
+      };
+      
+      // Extrai a descrição do texto da resposta
+      const extractDescription = (content) => {
+        const descRegex = /(?:Descrição|Cenário)[:]\s*(.*?)(?=\n\d|\n\*)/is;
+        const match = content.match(descRegex);
+        return match ? match[1].trim() : "Automação do processo descrito";
+      };
+      
+      // Extrai etapas do teste do texto da resposta
+      const extractTestSteps = (content) => {
+        const steps = [];
         
-        // Remove indicador de carregamento
-        removeLoadingIndicator();
+        // Tenta encontrar a seção de etapas ou passos do teste
+        let stepsSection = "";
+        if (content.includes("Etapas do teste")) {
+          const regex = /Etapas do teste.*?:(.*?)(?=\d\.\s*Código|$)/is;
+          const match = content.match(regex);
+          stepsSection = match ? match[1] : content;
+        } else {
+          stepsSection = content;
+        }
         
-        // Resposta simulada - seria substituída pela resposta da API real
-        const mockResponse = {
-          success: true,
-          testName: "Login e Navegação para Módulo de Vendas",
-          framework: framework,
-          description: "Teste automatizado para login no sistema ERP, navegação até o módulo de vendas, criação de um novo pedido e validação.",
-          steps: [
-            {
-              number: 1,
-              action: "navigate",
-              description: "Abrir o sistema ERP",
-              code: `driver.get("https://erp.example.com");`,
-              selector: null
+        // Tenta extrair passos enumerados
+        const stepsRegex = /(\d+)[.)\s]+([^\n]+)/g;
+        let match;
+        while ((match = stepsRegex.exec(stepsSection)) !== null) {
+          const stepNumber = parseInt(match[1]);
+          const stepText = match[2].trim();
+          
+          // Tenta determinar o tipo de ação baseado no texto
+          let action = determineActionType(stepText);
+          
+          // Cria um objeto de passo
+          const step = {
+            number: stepNumber,
+            action: action,
+            description: stepText,
+            selector: extractSelector(stepText)
+          };
+          
+          steps.push(step);
+        }
+        
+        // Se não achou nenhum passo, retorna pelo menos alguns passos genéricos
+        if (steps.length === 0) {
+          return [
+            { 
+              number: 1, 
+              action: "navigate", 
+              description: "Navegar para o sistema", 
+              selector: null 
             },
-            {
-              number: 2,
-              action: "input",
-              description: "Preencher usuário",
-              code: `driver.findElement(By.id("username")).sendKeys("admin");`,
-              selector: "#username"
+            { 
+              number: 2, 
+              action: "input", 
+              description: "Inserir dados necessários", 
+              selector: null 
             },
-            {
-              number: 3,
-              action: "input",
-              description: "Preencher senha",
-              code: `driver.findElement(By.id("password")).sendKeys("senha123");`,
-              selector: "#password"
-            },
-            {
-              number: 4,
-              action: "click",
-              description: "Clicar no botão de login",
-              code: `driver.findElement(By.xpath("//button[contains(text(), 'Entrar')]")).click();`,
-              selector: "xpath=//button[contains(text(), 'Entrar')]"
-            },
-            {
-              number: 5,
-              action: "wait",
-              description: "Aguardar carregamento da página inicial",
-              code: `WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));\nwait.until(ExpectedConditions.visibilityOfElementLocated(By.className("dashboard")));`,
-              selector: ".dashboard"
-            },
-            {
-              number: 6,
-              action: "click",
-              description: "Acessar o menu Vendas",
-              code: `driver.findElement(By.xpath("//a[contains(text(), 'Vendas')]")).click();`,
-              selector: "xpath=//a[contains(text(), 'Vendas')]"
-            },
-            {
-              number: 7,
-              action: "click",
-              description: "Clicar no botão Novo Pedido",
-              code: `driver.findElement(By.id("new-order-btn")).click();`,
-              selector: "#new-order-btn"
-            },
-            {
-              number: 8,
-              action: "input",
-              description: "Preencher número do cliente",
-              code: `driver.findElement(By.name("customer_id")).sendKeys("1001");`,
-              selector: "name=customer_id"
-            },
-            {
-              number: 9,
-              action: "click",
-              description: "Salvar pedido",
-              code: `driver.findElement(By.cssSelector(".save-button")).click();`,
-              selector: ".save-button"
-            },
-            {
-              number: 10,
-              action: "assertion",
-              description: "Verificar se o pedido foi criado com sucesso",
-              code: `assertTrue(driver.findElement(By.cssSelector(".success-message")).isDisplayed());`,
-              selector: ".success-message"
+            { 
+              number: 3, 
+              action: "click", 
+              description: "Submeter o formulário", 
+              selector: null 
             }
-          ],
-          generatedCode: getCodeTemplate(framework)
-        };
+          ];
+        }
         
-        // Adiciona resposta do bot
-        addBotResponse(mockResponse);
+        return steps;
+      };
+      
+      // Determina o tipo de ação baseado no texto do passo
+      const determineActionType = (stepText) => {
+        const text = stepText.toLowerCase();
+        
+        if (text.includes("naveg") || text.includes("abrir") || text.includes("acessa")) {
+          return "navigate";
+        } else if (text.includes("clicar") || text.includes("selecionar") || text.includes("pressionar")) {
+          return "click";
+        } else if (text.includes("preencher") || text.includes("digitar") || text.includes("inserir")) {
+          return "input";
+        } else if (text.includes("aguardar") || text.includes("esperar")) {
+          return "wait";
+        } else if (text.includes("verificar") || text.includes("validar") || text.includes("confirmar")) {
+          return "assertion";
+        }
+        
+        return "input"; // Padrão
+      };
+      
+      // Tenta extrair um seletor do texto do passo
+      const extractSelector = (stepText) => {
+        // Tenta encontrar um seletor HTML
+        const selectorRegex = /(id|class|name|css|xpath)[\s=:]+["']?([^"'\s]+)["']?/i;
+        const match = stepText.match(selectorRegex);
+        
+        if (match) {
+          const type = match[1].toLowerCase();
+          const value = match[2];
+          
+          // Formata o seletor de acordo com o tipo
+          if (type === 'id') return `#${value}`;
+          if (type === 'class') return `.${value}`;
+          if (type === 'name') return `name=${value}`;
+          if (type === 'xpath') return `xpath=${value}`;
+          return value;
+        }
+        
+        // Tenta encontrar textos com aspas que possam ser labels ou botões
+        const quoteRegex = /["']([^"']+)["']/;
+        const quoteMatch = stepText.match(quoteRegex);
+        
+        if (quoteMatch) {
+          const text = quoteMatch[1];
+          return `xpath=//*[contains(text(), '${text}')]`;
+        }
+        
+        return null;
+      };
+      
+      // Extrai o código do texto da resposta
+      const extractCode = (content) => {
+        const codeRegex = /```(?:\w*)([\s\S]*?)```/;
+        const match = content.match(codeRegex);
+        return match ? match[1].trim() : 
+               "// Não foi possível extrair o código da resposta.\n// Consulte o assistente para mais detalhes.";
       };
       
       // Adiciona mensagem do usuário ao chat
@@ -484,6 +566,25 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
       };
       
+      // Adiciona mensagem de erro
+      const addErrorMessage = (errorText) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot-message';
+        
+        const title = document.createElement('h5');
+        title.textContent = 'Erro';
+        messageDiv.appendChild(title);
+        
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = errorText;
+        messageDiv.appendChild(errorMessage);
+        
+        chatContainer.appendChild(messageDiv);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
       // Adiciona indicador de carregamento
       const addLoadingIndicator = () => {
         const loadingDiv = document.createElement('div');
@@ -542,221 +643,11 @@
         }
       };
       
-      // Retorna template de código para o framework
-      const getCodeTemplate = (framework) => {
-        switch(framework) {
-          case 'selenium':
-            return `import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import java.time.Duration;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-public class ErpLoginAndOrderTest {
-    
-    private WebDriver driver;
-    
-    @BeforeEach
-    public void setUp() {
-        driver = new ChromeDriver();
-        driver.manage().window().maximize();
-    }
-    
-    @Test
-    public void testLoginAndCreateOrder() {
-        // Abrir o sistema ERP
-        driver.get("https://erp.example.com");
-        
-        // Preencher usuário
-        driver.findElement(By.id("username")).sendKeys("admin");
-        
-        // Preencher senha
-        driver.findElement(By.id("password")).sendKeys("senha123");
-        
-        // Clicar no botão de login
-        driver.findElement(By.xpath("//button[contains(text(), 'Entrar')]")).click();
-        
-        // Aguardar carregamento da página inicial
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.className("dashboard")));
-        
-        // Acessar o menu Vendas
-        driver.findElement(By.xpath("//a[contains(text(), 'Vendas')]")).click();
-        
-        // Clicar no botão Novo Pedido
-        driver.findElement(By.id("new-order-btn")).click();
-        
-        // Preencher número do cliente
-        driver.findElement(By.name("customer_id")).sendKeys("1001");
-        
-        // Salvar pedido
-        driver.findElement(By.cssSelector(".save-button")).click();
-        
-        // Verificar se o pedido foi criado com sucesso
-        assertTrue(driver.findElement(By.cssSelector(".success-message")).isDisplayed());
-    }
-    
-    @AfterEach
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
-        }
-    }
-}`;
-          
-          case 'cypress':
-            return `describe('ERP Login and Order Creation', () => {
-  it('should login and create a new order', () => {
-    // Abrir o sistema ERP
-    cy.visit('https://erp.example.com')
-    
-    // Preencher usuário
-    cy.get('#username').type('admin')
-    
-    // Preencher senha
-    cy.get('#password').type('senha123')
-    
-    // Clicar no botão de login
-    cy.contains('button', 'Entrar').click()
-    
-    // Aguardar carregamento da página inicial
-    cy.get('.dashboard').should('be.visible')
-    
-    // Acessar o menu Vendas
-    cy.contains('a', 'Vendas').click()
-    
-    // Clicar no botão Novo Pedido
-    cy.get('#new-order-btn').click()
-    
-    // Preencher número do cliente
-    cy.get('[name="customer_id"]').type('1001')
-    
-    // Salvar pedido
-    cy.get('.save-button').click()
-    
-    // Verificar se o pedido foi criado com sucesso
-    cy.get('.success-message').should('be.visible')
-  })
-})`;
-          
-          case 'playwright':
-            return `import { test, expect } from '@playwright/test';
-
-test('Login and create new order', async ({ page }) => {
-  // Abrir o sistema ERP
-  await page.goto('https://erp.example.com');
-  
-  // Preencher usuário
-  await page.fill('#username', 'admin');
-  
-  // Preencher senha
-  await page.fill('#password', 'senha123');
-  
-  // Clicar no botão de login
-  await page.click('button:has-text("Entrar")');
-  
-  // Aguardar carregamento da página inicial
-  await page.waitForSelector('.dashboard');
-  
-  // Acessar o menu Vendas
-  await page.click('a:has-text("Vendas")');
-  
-  // Clicar no botão Novo Pedido
-  await page.click('#new-order-btn');
-  
-  // Preencher número do cliente
-  await page.fill('[name="customer_id"]', '1001');
-  
-  // Salvar pedido
-  await page.click('.save-button');
-  
-  // Verificar se o pedido foi criado com sucesso
-  await expect(page.locator('.success-message')).toBeVisible();
-});`;
-          
-          case 'appium':
-            return `import io.appium.java_client.AppiumDriver;
-import io.appium.java_client.android.AndroidDriver;
-import org.openqa.selenium.By;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import java.net.URL;
-import java.time.Duration;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-public class ErpMobileTest {
-    
-    private AppiumDriver driver;
-    
-    @BeforeEach
-    public void setUp() throws Exception {
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        capabilities.setCapability("platformName", "Android");
-        capabilities.setCapability("deviceName", "Android Device");
-        capabilities.setCapability("appPackage", "com.example.erp");
-        capabilities.setCapability("appActivity", "com.example.erp.MainActivity");
-        
-        driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"), capabilities);
-    }
-    
-    @Test
-    public void testLoginAndCreateOrder() {
-        // Preencher usuário
-        driver.findElement(By.id("username")).sendKeys("admin");
-        
-        // Preencher senha
-        driver.findElement(By.id("password")).sendKeys("senha123");
-        
-        // Clicar no botão de login
-        driver.findElement(By.xpath("//android.widget.Button[contains(@text, 'Entrar')]")).click();
-        
-        // Aguardar carregamento da página inicial
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("dashboard")));
-        
-        // Acessar o menu Vendas
-        driver.findElement(By.xpath("//android.widget.TextView[contains(@text, 'Vendas')]")).click();
-        
-        // Clicar no botão Novo Pedido
-        driver.findElement(By.id("new_order_btn")).click();
-        
-        // Preencher número do cliente
-        driver.findElement(By.id("customer_id")).sendKeys("1001");
-        
-        // Salvar pedido
-        driver.findElement(By.id("save_button")).click();
-        
-        // Verificar se o pedido foi criado com sucesso
-        assertTrue(driver.findElement(By.id("success_message")).isDisplayed());
-    }
-    
-    @AfterEach
-    public void tearDown() {
-        if (driver != null) {
-            driver.quit();
-        }
-    }
-}`;
-          
-          default:
-            return `// Código de exemplo para teste automatizado`;
-        }
-      };
-      
       // Event listeners
       generateBtn.addEventListener('click', () => {
         const description = codeInput.value.trim();
         if (description) {
-          generateAutomation(description, frameworkSelect.value);
+          generateAutomationWithAPI(description, frameworkSelect.value);
           codeInput.value = '';
         }
       });

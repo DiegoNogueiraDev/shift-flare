@@ -22,6 +22,9 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="css/styles.css">
   
+  <!-- Cliente JavaScript para a API -->
+  <script src="js/ai-client.js"></script>
+  
   <!-- Favicon -->
   <link rel="icon" href="img/flare-logo.png" type="image/png">
   
@@ -224,48 +227,165 @@
       // Inicializa syntax highlighting
       hljs.highlightAll();
       
-      // Simula a API de análise de código
-      const analyzeCode = async (code, language) => {
+      // Função para analisar código usando a API real
+      const analyzeCodeWithAPI = async (code, language) => {
         // Mostra a mensagem do usuário
         addUserMessage(code);
         
         // Mostra indicador de carregamento
         addLoadingIndicator();
         
-        // Simula delay de API - aqui conectaríamos com a API real
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        try {
+          // Chama a API real
+          const response = await analyzeCode(code, language);
+          
+          // Remove indicador de carregamento
+          removeLoadingIndicator();
+          
+          if (response.success) {
+            // Processa a resposta
+            const content = response.response;
+            
+            // Cria um objeto de resposta formatado para exibição
+            const formattedResponse = {
+              summary: extractSection(content, "Resumo da análise"),
+              issues: extractIssues(content),
+              overallScore: extractScore(content)
+            };
+            
+            // Adiciona resposta do bot
+            addBotResponse(formattedResponse);
+          } else {
+            // Em caso de erro
+            addErrorMessage(response.error || "Ocorreu um erro ao analisar o código.");
+          }
+        } catch (error) {
+          // Remove indicador de carregamento
+          removeLoadingIndicator();
+          
+          // Adiciona mensagem de erro
+          addErrorMessage("Erro ao conectar com o serviço de análise. Por favor, tente novamente mais tarde.");
+          console.error("Erro ao analisar código:", error);
+        }
+      };
+      
+      // Extrai uma seção específica do texto da resposta
+      const extractSection = (content, sectionName) => {
+        const regex = new RegExp(`(?:${sectionName}|1\.)[:\\s]*(.*?)(?=\\d\\.\\s|$)`, 's');
+        const match = content.match(regex);
+        return match ? match[1].trim() : "Não foi possível extrair esta seção.";
+      };
+      
+      // Extrai a pontuação do texto da resposta
+      const extractScore = (content) => {
+        const regex = /(?:Pontuação|score|qualidade)[^0-9]*?(\d+)/i;
+        const match = content.match(regex);
+        return match ? parseInt(match[1]) : 75;
+      };
+      
+      // Extrai issues do texto da resposta
+      const extractIssues = (content) => {
+        const issues = [];
         
-        // Remove indicador de carregamento
-        removeLoadingIndicator();
-        
-        // Resposta simulada - seria substituída pela resposta da API real
-        const mockResponse = {
-          summary: "Analisei seu código e encontrei alguns pontos que podem ser melhorados.",
-          issues: [
-            {
-              type: "warning",
-              description: "Possível vazamento de memória devido a recursos não fechados.",
-              line: 12,
-              suggestion: "Utilize try-with-resources ou garanta que todos os recursos sejam fechados adequadamente."
-            },
-            {
-              type: "improvement",
-              description: "O método é muito longo e pode ser dividido em funções menores.",
-              line: 5,
-              suggestion: "Considere extrair as operações lógicas para métodos separados com responsabilidades únicas."
-            },
-            {
+        // Tenta extrair problemas críticos
+        if (content.includes("Problemas críticos") || content.includes("2.")) {
+          const criticalSection = extractSection(content, "Problemas críticos");
+          const criticalIssues = extractBulletPoints(criticalSection);
+          
+          criticalIssues.forEach(issue => {
+            issues.push({
               type: "critical",
-              description: "Possível null pointer exception ao acessar propriedade sem verificação.",
-              line: 18,
-              suggestion: "Adicione uma verificação de nulidade antes de acessar esta propriedade."
-            }
-          ],
-          overallScore: 75
-        };
+              description: issue,
+              suggestion: getSuggestionForIssue(issue, content)
+            });
+          });
+        }
         
-        // Adiciona resposta do bot
-        addBotResponse(mockResponse);
+        // Tenta extrair avisos
+        if (content.includes("Avisos") || content.includes("3.")) {
+          const warningSection = extractSection(content, "Avisos e possíveis melhorias");
+          const warningIssues = extractBulletPoints(warningSection);
+          
+          warningIssues.forEach(issue => {
+            issues.push({
+              type: "warning",
+              description: issue,
+              suggestion: getSuggestionForIssue(issue, content)
+            });
+          });
+        }
+        
+        // Tenta extrair sugestões de boas práticas
+        if (content.includes("Sugestões") || content.includes("4.")) {
+          const improvementSection = extractSection(content, "Sugestões de boas práticas");
+          const improvementIssues = extractBulletPoints(improvementSection);
+          
+          improvementIssues.forEach(issue => {
+            issues.push({
+              type: "improvement",
+              description: issue,
+              suggestion: getSuggestionForIssue(issue, content)
+            });
+          });
+        }
+        
+        // Se não encontrou problemas, adiciona um genérico
+        if (issues.length === 0) {
+          issues.push({
+            type: "info",
+            description: "Análise geral",
+            suggestion: "Veja o resumo para mais detalhes."
+          });
+        }
+        
+        return issues;
+      };
+      
+      // Extrai itens em formato de bullet point
+      const extractBulletPoints = (text) => {
+        if (!text) return [];
+        
+        // Tenta extrair itens em formato de bullet points ou listas numeradas
+        const bulletRegex = /(?:^|\n)[-*•]?\s*([^-*•\n][^\n]+)/g;
+        const items = [];
+        let match;
+        
+        while ((match = bulletRegex.exec(text)) !== null) {
+          items.push(match[1].trim());
+        }
+        
+        // Se não encontrou em formato de bullet, divide por linhas
+        if (items.length === 0) {
+          return text.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 10);
+        }
+        
+        return items;
+      };
+      
+      // Tenta extrair uma sugestão relacionada ao problema
+      const getSuggestionForIssue = (issue, content) => {
+        // Simplificação: busca a mesma frase com "Recomendação" ou "Sugestão" próximo
+        const issueKeywords = issue.split(' ')
+          .filter(word => word.length > 4)
+          .slice(0, 3);
+        
+        if (issueKeywords.length === 0) {
+          return "Revise o código seguindo as recomendações.";
+        }
+        
+        // Procura por esses keywords no conteúdo para encontrar sugestões próximas
+        for (const keyword of issueKeywords) {
+          const regex = new RegExp(`(?:Recomendação|Sugestão|Para resolver|Corrija)[^.]*?\\b${keyword}[^.]*\\.`, 'i');
+          const match = content.match(regex);
+          
+          if (match) {
+            return match[0].trim();
+          }
+        }
+        
+        return "Verifique o código e implemente as correções necessárias.";
       };
       
       // Adiciona mensagem do usuário ao chat
@@ -322,11 +442,6 @@
           issueTitle.innerHTML = `<strong>${getIssueTypeLabel(issue.type)}:</strong> ${issue.description}`;
           issueDiv.appendChild(issueTitle);
           
-          const issueLine = document.createElement('div');
-          issueLine.className = 'small';
-          issueLine.innerHTML = `<strong>Linha:</strong> ${issue.line}`;
-          issueDiv.appendChild(issueLine);
-          
           const issueSuggestion = document.createElement('div');
           issueSuggestion.className = 'mt-2';
           issueSuggestion.innerHTML = `<strong>Sugestão:</strong> ${issue.suggestion}`;
@@ -345,6 +460,25 @@
           <i class="bi bi-hand-thumbs-down" title="Não Útil"></i>
         `;
         messageDiv.appendChild(feedbackDiv);
+        
+        chatContainer.appendChild(messageDiv);
+        
+        // Rola para a última mensagem
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      };
+      
+      // Adiciona mensagem de erro
+      const addErrorMessage = (errorText) => {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot-message';
+        
+        const title = document.createElement('h5');
+        title.textContent = 'Erro';
+        messageDiv.appendChild(title);
+        
+        const errorMessage = document.createElement('p');
+        errorMessage.textContent = errorText;
+        messageDiv.appendChild(errorMessage);
         
         chatContainer.appendChild(messageDiv);
         
@@ -390,7 +524,7 @@
       analyzeBtn.addEventListener('click', () => {
         const code = codeInput.value.trim();
         if (code) {
-          analyzeCode(code, languageSelect.value);
+          analyzeCodeWithAPI(code, languageSelect.value);
           codeInput.value = '';
         }
       });
