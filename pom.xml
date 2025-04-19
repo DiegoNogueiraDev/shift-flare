@@ -62,7 +62,85 @@
   </dependencies>
 
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>**/node_modules/**</exclude>
+          <exclude>static/node_modules/**</exclude>
+          <exclude>**/node/**</exclude>
+          <exclude>**/.bin/**</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    
     <plugins>
+      <!-- Plugin para excluir node_modules do processamento de recursos -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <nonFilteredFileExtensions>
+            <nonFilteredFileExtension>ttf</nonFilteredFileExtension>
+            <nonFilteredFileExtension>woff</nonFilteredFileExtension>
+            <nonFilteredFileExtension>woff2</nonFilteredFileExtension>
+          </nonFilteredFileExtensions>
+          <excludes>
+            <exclude>**/node_modules/**</exclude>
+            <exclude>**/node/**</exclude>
+            <exclude>**/node_modules/.bin/**</exclude>
+            <exclude>**/node_modules/**/bin/**</exclude>
+          </excludes>
+          <!-- Não copiar links simbólicos -->
+          <includeEmptyDirs>false</includeEmptyDirs>
+          <followSymlinks>false</followSymlinks>
+        </configuration>
+      </plugin>
+      
+      <!-- Plugin para limpar o target antes de cada build -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>auto-clean</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      
+      <!-- Plugin para suporte offline -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>download-dependencies</id>
+            <phase>validate</phase>
+            <goals>
+              <goal>go-offline</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      
       <!-- Plugin para incremento automático da versão (executa primeiro) -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>

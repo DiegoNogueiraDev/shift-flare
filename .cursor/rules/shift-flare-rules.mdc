@@ -1,0 +1,152 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# SHIFT-FLARE.MDC
+
+## 📌 CONTEXTO DO PROJETO
+
+Você está desenvolvendo a aplicação **Shift-Flare**, uma landing page institucional moderna, responsiva e sem autenticação, voltada para funcionalidades de automação com inteligência artificial. O frontend será desenvolvido com **Next.js 15 (App Router)** e **TailwindCSS**, com animações via **Framer Motion**. Todo o backend será implementado em **Spring Boot** e fornecido via API REST (não precisa ser implementado agora).
+
+O foco é em uma UI bem estruturada, leve, moderna e 100% componentizada. A aplicação não possui banco de dados, autenticação, nem funcionalidades dinâmicas persistentes além de consumo via API. O escopo é exclusivamente **frontend estático responsivo** com integração futura.
+
+---
+
+## ❌ RESTRIÇÕES E PROIBIÇÕES
+
+- ❌ **NÃO usar pages/router tradicional (use App Router!)**
+- ❌ **NÃO utilizar `getServerSideProps`, `getStaticProps`, etc.**
+- ❌ **NÃO usar useState ou useEffect para armazenar dados persistentes**
+- ❌ **NÃO adicionar autenticação, login, ou cadastro**
+- ❌ **NÃO criar banco de dados, models ou schemas**
+- ❌ **NÃO alterar a paleta de cores**
+- ❌ **NÃO adicionar bibliotecas desnecessárias**
+
+---
+
+## ✅ OBRIGAÇÕES DO AGENTE
+
+1. **Usar Next.js 15 com App Router (`/app`)**
+2. **Usar TailwindCSS com configuração customizada**
+3. **Componentização modular de todos os elementos**
+4. **Animações suaves com Framer Motion (ex: fade, slide, scale)**
+5. **Ícones da interface com react-icons**
+6. **Logotipo sempre renderizado como `Shift🔥Flare` com ícone (🔥)**
+7. **Seguir estrutura de pastas clean abaixo**
+8. **Tipagem rigorosa com TypeScript**
+
+---
+
+## 🧱 ESTRUTURA PADRÃO DE PASTAS
+
+```
+/app
+/components
+/hooks
+/utils
+/types
+/public/images
+/styles
+/docs
+```
+
+---
+
+## 🧩 SEÇÕES OBRIGATÓRIAS NA LANDING PAGE
+
+- ✅ Navbar com scroll suave + dropdown
+- ✅ Hero com headline, texto e CTA
+- ✅ Features com cards animados (4 funcionalidades principais)
+- ✅ FAQ com layout tipo acordeão
+- ✅ Equipe com cards de membros e animações leves
+- ✅ Footer com links e branding
+
+---
+
+## 🔥 MENU SUSPENSO OBRIGATÓRIO
+
+Deve conter 4 finalidades visuais com links internos (scroll):
+
+1. Correção de XPath utilizando IA com OpenRouter
+2. Criação de automação a partir de BDD em chat bot
+3. Code Review com IA
+4. Migração de código de versão Q2 → Q3
+
+---
+
+## 🎨 IDENTIDADE VISUAL
+
+- **Cores principais**: vermelho, roxo, azul em degradê com laranja
+- **Tipografia**: Inter, sans-serif
+- **Logotipo**: Shift🔥Flare (ícone de fogo do `react-icons`)
+- **Estilo**: Moderno, minimalista, com destaque em animações e responsividade
+- **Responsividade**: mobile-first, escalável até desktops widescreen
+- **TailwindConfig**: cores customizadas, temas centralizados
+
+---
+
+## 📡 INTEGRAÇÃO COM API (EXEMPLO PARA POST)
+
+```ts
+// utils/api.ts
+export async function getXPathCorrection(input: string) {
+  const res = await fetch('https://api.seuprojeto.com/xpath', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input }),
+  });
+  return res.json();
+}
+```
+
+---
+
+## 📦 BIBLIOTECAS PERMITIDAS
+
+- next
+- react
+- tailwindcss
+- framer-motion
+- react-icons
+- classnames (opcional)
+- axios ou fetch (consumo API)
+
+---
+
+## ✨ EXIGÊNCIAS GERAIS
+
+- Componentes reutilizáveis (`Card`, `Section`, `Dropdown`, `Avatar`)
+- Tailwind customizado (sem usar CSS externo)
+- `README.md` com instruções de execução e estrutura
+- Sem dependência de CMS, backend ou SSR
+- Sem alucinações: **SEMPRE seguir escopo acima**
+
+---
+
+## 📍 LEMBRETES PARA O AGENTE
+
+- Mantenha o foco em uma landing page institucional, com interface impactante
+- Evite qualquer tipo de lógica de autenticação ou cadastro
+- Use `app/layout.tsx` para definir layout global com fontes, navbar e footer
+- `tailwind.config.js` deve conter todas as cores usadas em `theme.extend.colors`
+- Use `motion.div` onde houver transições visuais importantes
+
+---
+
+## ✅ EXEMPLO DE ARQUIVOS INICIAIS ESPERADOS
+
+- `/app/page.tsx` → renderiza Hero + Features + FAQ + Team + Footer
+- `/components/ui/Button.tsx`
+- `/components/layout/Navbar.tsx`
+- `/components/sections/Hero.tsx`
+- `/styles/globals.css`
+- `/utils/animations.ts`
+- `/tailwind.config.ts` → com tema personalizado
+
+---
+
+## 📘 FINAL
+
+Este arquivo `shift-flare.mdc` serve como regra **imutável** para construção da aplicação. Qualquer implementação fora desse escopo deve ser **recusada** ou **ajustada** automaticamente para atender aos critérios especificados aqui. O foco é código **limpo, coeso, performático e fiel ao projeto original**.
+

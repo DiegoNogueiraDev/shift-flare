@@ -1,55 +1,220 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shift-Flare - Automação Inteligente</title>
-  <meta name="description" content="Shift-Flare - Solução de automação inteligente que potencializa seus processos B2B">
-  
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-  <!-- Bootstrap Icons -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-  
-  <!-- Google Fonts - Poppins -->
-  <link href="fonts/poppins/poppins.css" rel="stylesheet">
-  
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="css/styles.css">
-  
-  <!-- Favicon -->
-  <link rel="icon" href="img/flare-logo.png" type="image/png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shift-Flare | Automação com IA</title>
+    <style>
+        :root {
+            --red-primary: #FF3D00;
+            --red-light: #FF8A65;
+            --purple-primary: #7B1FA2;
+            --purple-light: #BA68C8;
+            --blue-primary: #1976D2;
+            --blue-light: #64B5F6;
+            --orange-primary: #FF9800;
+            --orange-light: #FFCC80;
+            --dark: #1A1A2E;
+            --light: #FFFFFF;
+            --gray: #F5F5F5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: var(--gray);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--purple-primary), var(--blue-primary));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        main {
+            flex: 1;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--red-primary), var(--orange-primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+        
+        .logo {
+            font-weight: 800;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        h2 {
+            color: var(--purple-primary);
+            margin: 1.5rem 0 1rem;
+            font-size: 1.8rem;
+        }
+        
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background-color: var(--gray);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border-top: 4px solid var(--blue-primary);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: var(--purple-primary);
+            margin-bottom: 0.8rem;
+        }
+        
+        .api-endpoint {
+            background-color: var(--dark);
+            color: var(--light);
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .button {
+            display: inline-block;
+            background: linear-gradient(to right, var(--purple-primary), var(--blue-primary));
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 1rem;
+            transition: opacity 0.2s ease;
+        }
+        
+        .button:hover {
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            main {
+                padding: 1rem;
+            }
+            
+            .container {
+                padding: 1.5rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <!-- Navbar Component -->
-  <div data-component="navbar" data-activate="true"></div>
-  
-  <!-- Main Content -->
-  <main>
-    <!-- Hero Component -->
-    <div data-component="hero"></div>
+    <header>
+        <div class="logo">Shift🔥Flare</div>
+        <div class="subtitle">Automação inteligente com IA</div>
+    </header>
     
-    <!-- Features Component -->
-    <div data-component="features"></div>
+    <main>
+        <div class="container">
+            <h1>Bem-vindo ao Shift-Flare</h1>
+            <p>O backend Shift-Flare está funcionando corretamente. Esta é uma página de fallback para quando o frontend Next.js não está disponível.</p>
+            
+            <h2>API REST Disponível</h2>
+            <p>O serviço oferece uma API REST para correção de XPath e funcionalidades de IA com OpenRouter.</p>
+            
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Correção de XPath com IA</h3>
+                    <p>Corrige automaticamente XPaths quebrados utilizando modelos de linguagem via OpenRouter.</p>
+                    <div class="api-endpoint">POST /api/v1/xpath/predict</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Análise de Código (Code Review)</h3>
+                    <p>Analisa código fonte e fornece feedback detalhado sobre qualidade e possíveis melhorias.</p>
+                    <div class="api-endpoint">POST /api/ai/code-review</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Geração de Scripts de Automação</h3>
+                    <p>Cria scripts de automação baseados em descrições em linguagem natural.</p>
+                    <div class="api-endpoint">POST /api/ai/automation</div>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Migração de Código Q2 para Q3</h3>
+                    <p>Converte código legado da estrutura Q2 para o padrão mais recente Q3.</p>
+                    <div class="api-endpoint">POST /api/ai/migration</div>
+                </div>
+            </div>
+            
+            <h2>Documentação da API</h2>
+            <p>A documentação completa da API está disponível através do Swagger UI:</p>
+            <a href="/swagger-ui.html" class="button">Acessar Swagger UI</a>
+            
+            <h2>Status do Servidor</h2>
+            <p>Informações detalhadas sobre o status do servidor estão disponíveis através do Spring Actuator:</p>
+            <a href="/actuator/health" class="button">Verificar Status</a>
+        </div>
+    </main>
     
-    <!-- FAQ Component -->
-    <div data-component="faq"></div>
-    
-    <!-- Creator Component -->
-    <div data-component="creator"></div>
-  </main>
-  
-  <!-- Footer Component -->
-  <div data-component="footer"></div>
-  
-  <!-- Bootstrap Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- Component Loader Script -->
-  <script src="js/component-loader.js"></script>
-  
-  <!-- Utilities Script -->
-  <script src="js/utils.js"></script>
+    <footer>
+        <p>&copy; 2023-2024 Shift-Flare | Powered by Spring Boot & OpenRouter AI</p>
+    </footer>
 </body>
 </html> 
