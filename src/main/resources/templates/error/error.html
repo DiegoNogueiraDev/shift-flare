@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erro - Shift-Flare</title>
+    <link rel="stylesheet" th:href="@{/css/error.css}">
+</head>
+<body>
+    <div class="error-container">
+        <div class="logo">Shift🔥Flare</div>
+        
+        <div class="error-code" th:text="${status}">500</div>
+        
+        <h1 class="error-title" th:text="${error}">Erro Interno do Servidor</h1>
+        
+        <p class="error-message" th:text="${message}">Ocorreu um erro inesperado no processamento da sua solicitação.</p>
+        
+        <a href="/" class="button">Voltar para a Página Inicial</a>
+        
+        <div class="stacks" th:if="${trace}">
+            <p>Detalhes técnicos (visíveis apenas em ambiente de desenvolvimento):</p>
+            <pre th:text="${trace}"></pre>
+        </div>
+    </div>
+</body>
+</html> 

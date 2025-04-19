@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 245, 245, 245;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7B1FA2;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5c1675;
+}
+
+/* Adiciona sombra de texto para melhor visibilidade em fundos escuros */
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.text-shadow-md {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Custom animations */
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Custom styles for smooth transitions */
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-shift-purple to-shift-blue text-white font-semibold py-2 px-6 rounded-md shadow-md transition-all duration-300 hover:shadow-lg hover:opacity-90;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-shift-purple border border-shift-purple font-semibold py-2 px-6 rounded-md shadow-sm transition-all duration-300 hover:bg-gray-50;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-card p-6 transition-all duration-300 hover:shadow-lg;
+  }
+  
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+  
+  .heading-xl {
+    @apply text-4xl md:text-5xl font-bold;
+  }
+  
+  .heading-lg {
+    @apply text-3xl md:text-4xl font-bold;
+  }
+  
+  .heading-md {
+    @apply text-2xl md:text-3xl font-bold;
+  }
+  
+  .body-text {
+    @apply text-base text-gray-700 leading-relaxed;
+  }
+} 
