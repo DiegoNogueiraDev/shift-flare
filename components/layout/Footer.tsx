@@ -61,9 +61,9 @@ const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Empresa */}
+          {/* Projeto */}
           <div className="col-span-1">
-            <h3 className="text-lg font-semibold mb-4">Empresa</h3>
+            <h3 className="text-lg font-semibold mb-4">Projeto</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="#about" className="text-gray-300 hover:text-white transition-colors">

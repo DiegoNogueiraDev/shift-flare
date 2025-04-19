@@ -57,7 +57,7 @@ const FeaturesSection: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <Card className="h-full flex flex-col">
-                <div className="p-4 bg-gray-100 rounded-lg inline-block mb-4">
+                <div className="p-4 bg-gradient-to-r from-shift-orange to-shift-red rounded-lg inline-block mb-4">
                   {iconMap[feature.icon]}
                 </div>
                 <h3 className="text-xl font-semibold text-shift-dark mb-3">

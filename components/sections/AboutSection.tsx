@@ -94,6 +94,35 @@ const AboutSection: React.FC = () => {
             <div className="text-lg">Empresas satisfeitas</div>
           </div>
         </motion.div>
+
+        {/* Destaque para o criador */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          viewport={{ once: true }}
+          className="mt-16 text-center"
+        >
+          <div className="relative backdrop-blur-sm bg-gradient-to-r from-shift-purple/10 to-shift-blue/10 p-6 rounded-xl border border-white/20 shadow-xl max-w-3xl mx-auto overflow-hidden">
+            {/* Elementos decorativos de fundo */}
+            <div className="absolute -top-10 -left-10 w-40 h-40 bg-shift-orange/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-shift-red/20 rounded-full blur-3xl"></div>
+            
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-4">
+              <div className="flex-shrink-0 bg-gradient-to-br from-shift-orange to-shift-red p-3 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div className="text-center md:text-left">
+                <h4 className="text-xl font-bold text-shift-dark mb-1">Hercules IA</h4>
+                <p className="text-shift-purple font-medium">
+                  Criado pela Equipe De Automação B2B
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

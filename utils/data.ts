@@ -76,8 +76,7 @@ export const faqItems: FAQItem[] = [
   {
     id: 8,
     question: 'Existe suporte técnico disponível para o Shift-Flare?',
-    answer: 'Sim, oferecemos suporte técnico dedicado através de chat, e-mail e chamadas de vídeo. Nossos especialistas estão disponíveis para ajudar com implementação, integrações personalizadas e resolução de problemas complexos, garantindo que você aproveite ao máximo nossa ferramenta.'
-  },
+    answer: 'Sim, oferecemos suporte via teams e reuniões de alinhamento. O projeto esta disponivel no Azure Repos da companhia.'  },
   {
     id: 9,
     question: 'O Shift-Flare armazena dados sensíveis da minha aplicação?',
